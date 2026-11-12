@@ -3,11 +3,13 @@ import { StatusBar } from 'expo-status-bar';
 import { Droplet } from 'lucide-react-native';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 import { ErroDrena } from '@/dados/DrenaRepo';
 import { useSessao } from '@/estado/SessaoContext';
 import { Botao } from '@/ui/Botao';
 import { Campo } from '@/ui/Campo';
+import { Entrada } from '@/ui/Entrada';
 import { Texto } from '@/ui/Texto';
 import { ALVO_MIN, cores, espaco } from '@/ui/tema';
 
@@ -36,9 +38,9 @@ export default function Login() {
       <StatusBar style="light" />
       <ScrollView contentContainerStyle={styles.rolagem} keyboardShouldPersistTaps="handled">
         <View style={styles.topo}>
-          <View style={styles.logo}>
+          <Animated.View entering={ZoomIn.springify().delay(150)} style={styles.logo}>
             <Droplet size={48} color={cores.primaria} strokeWidth={1.8} />
-          </View>
+          </Animated.View>
           <Texto variante="grande" cor={cores.branco} style={styles.marca}>
             DrenaAi
           </Texto>
@@ -50,7 +52,7 @@ export default function Login() {
           </Svg>
         </View>
 
-        <View style={styles.form}>
+        <Entrada ordem={3} style={styles.form}>
           <Texto variante="titulo" accessibilityRole="header">
             Entre na sua conta
           </Texto>
@@ -75,10 +77,12 @@ export default function Login() {
             </Texto>
           </Pressable>
 
-          {erro !== '' && (
-            <Texto cor={cores.vermelho.texto} accessibilityLiveRegion="polite">
-              {erro}
-            </Texto>
+                    {erro !== '' && (
+            <Animated.View entering={FadeIn}>
+              <Texto cor={cores.vermelho.texto} accessibilityLiveRegion="polite">
+                {erro}
+              </Texto>
+            </Animated.View>
           )}
 
           <Botao titulo="Entrar" onPress={aoEntrar} carregando={enviando} />
@@ -92,7 +96,7 @@ export default function Login() {
           </View>
 
           <Botao titulo="Criar conta" variante="secundario" onPress={() => router.push('/cadastro')} />
-        </View>
+        </Entrada>
       </ScrollView>
     </KeyboardAvoidingView>
   );

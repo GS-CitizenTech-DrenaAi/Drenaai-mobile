@@ -3,10 +3,12 @@ import { StatusBar } from 'expo-status-bar';
 import { Check, ChevronLeft, ShieldCheck } from 'lucide-react-native';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { ErroDrena } from '@/dados/DrenaRepo';
 import { useSessao } from '@/estado/SessaoContext';
 import { Botao } from '@/ui/Botao';
 import { Campo } from '@/ui/Campo';
+import { Entrada } from '@/ui/Entrada';
 import { Texto } from '@/ui/Texto';
 import { ALVO_MIN, cores, espaco } from '@/ui/tema';
 
@@ -45,15 +47,16 @@ export default function Cadastro() {
           <ChevronLeft size={28} color={cores.primaria} strokeWidth={1.9} />
         </Pressable>
 
-        <View>
+        <Entrada ordem={0}>
           <Texto variante="grande" accessibilityRole="header">
             Criar conta
           </Texto>
           <Texto cor={cores.textoSec} style={styles.subtitulo}>
             Leva menos de um minuto. Pedimos só o necessário.
           </Texto>
-        </View>
+        </Entrada>
 
+        <Entrada ordem={1} style={styles.grupo}>
         <Campo rotulo="Nome" value={nome} onChangeText={setNome} autoComplete="name" />
         <Campo
           rotulo="E-mail"
@@ -87,9 +90,11 @@ export default function Cadastro() {
         </Pressable>
 
         {erro !== '' && (
-          <Texto cor={cores.vermelho.texto} accessibilityLiveRegion="polite">
-            {erro}
-          </Texto>
+          <Animated.View entering={FadeIn}>
+            <Texto cor={cores.vermelho.texto} accessibilityLiveRegion="polite">
+              {erro}
+            </Texto>
+          </Animated.View>
         )}
 
         <Botao titulo="Criar conta" onPress={aoCriar} carregando={enviando} desabilitado={!aceite} />
@@ -109,6 +114,7 @@ export default function Cadastro() {
             </Texto>
           </Texto>
         </Pressable>
+        </Entrada>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -125,6 +131,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   subtitulo: { marginTop: espaco.sm },
+    grupo: { gap: espaco.lg },
   aceite: { flexDirection: 'row', gap: espaco.md, alignItems: 'flex-start', minHeight: ALVO_MIN },
   caixinha: {
     width: 26,
