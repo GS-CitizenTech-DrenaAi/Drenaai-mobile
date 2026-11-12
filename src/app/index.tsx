@@ -1,20 +1,23 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { cores, espaco, fonte, raio } from '@/ui/tema';
+import { Camera } from 'lucide-react-native';
+import { StyleSheet, View } from 'react-native';
+import { Botao } from '@/ui/Botao';
+import { Texto } from '@/ui/Texto';
+import { cores, espaco } from '@/ui/tema';
 
 export default function Index() {
   return (
     <View style={styles.tela}>
-      <Text style={styles.titulo}>DrenaAi</Text>
-      <View style={styles.chip}>
-        <Text style={styles.chipTexto}>Prioridade alta</Text>
-      </View>
+      <Texto variante="grande" cor={cores.primaria}>DrenaAi</Texto>
+      <Texto variante="titulo">Título em Inter</Texto>
+      <Texto>Texto do corpo em Inter normal.</Texto>
+      <Texto variante="pequeno" cor={cores.textoSec}>Texto pequeno secundário</Texto>
+      <Botao titulo="Denunciar" icone={Camera} onPress={() => console.log('apertou')} />
+      <Botao titulo="Acompanhar" variante="secundario" onPress={() => {}} />
+      <Botao titulo="Enviando" carregando onPress={() => {}} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  tela: { flex: 1, backgroundColor: cores.fundo, alignItems: 'center', justifyContent: 'center', gap: espaco.lg },
-  titulo: { fontSize: fonte.grande, fontWeight: '700', color: cores.primaria },
-  chip: { backgroundColor: cores.vermelho.fundo, paddingHorizontal: espaco.md, paddingVertical: espaco.sm, borderRadius: raio.pilula },
-  chipTexto: { color: cores.vermelho.texto, fontWeight: '600' },
+  tela: { flex: 1, backgroundColor: cores.fundo, justifyContent: 'center', padding: espaco.xl, gap: espaco.md },
 });
