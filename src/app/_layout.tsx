@@ -2,8 +2,26 @@ import { Inter_400Regular, Inter_600SemiBold, Inter_700Bold, useFonts } from '@e
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { SessaoProvider, useSessao } from '@/estado/SessaoContext';
 
 SplashScreen.preventAutoHideAsync();
+
+function Rotas() {
+  const { usuario } = useSessao();
+  const logado = usuario !== null;
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Protected guard={!logado}>
+        <Stack.Screen name="login" />
+        <Stack.Screen name="cadastro" />
+      </Stack.Protected>
+      <Stack.Protected guard={logado}>
+        <Stack.Screen name="index" />
+      </Stack.Protected>
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   const [fontesCarregadas] = useFonts({ Inter_400Regular, Inter_600SemiBold, Inter_700Bold });
@@ -14,5 +32,9 @@ export default function RootLayout() {
 
   if (!fontesCarregadas) return null;
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <SessaoProvider>
+      <Rotas />
+    </SessaoProvider>
+  );
 }
