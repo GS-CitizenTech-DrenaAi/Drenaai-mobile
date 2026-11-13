@@ -68,3 +68,12 @@ export function iniciais(nome: string): string {
   const ultima = partes.length > 1 ? partes[partes.length - 1][0] : '';
   return (primeira + ultima).toUpperCase();
 }
+export function diaEHora(iso: string, agora = new Date()): string {
+  const d = new Date(iso);
+  const hora = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  const ontem = new Date(agora);
+  ontem.setDate(agora.getDate() - 1);
+  if (d.toDateString() === agora.toDateString()) return `Hoje, ${hora}`;
+  if (d.toDateString() === ontem.toDateString()) return `Ontem, ${hora}`;
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}, ${hora}`;
+}
