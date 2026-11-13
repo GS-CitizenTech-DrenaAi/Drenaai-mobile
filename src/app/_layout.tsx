@@ -17,7 +17,7 @@ function Rotas() {
         <Stack.Screen name="cadastro" />
       </Stack.Protected>
       <Stack.Protected guard={logado}>
-        <Stack.Screen name="index" />
+        <Stack.Screen name="(abas)" />
       </Stack.Protected>
     </Stack>
   );
