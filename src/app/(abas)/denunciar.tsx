@@ -3,9 +3,9 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Camera, CircleAlert, ImagePlus, LocateFixed, MapPin, Send, Trash2 } from 'lucide-react-native';
+import { Camera, CircleAlert, LocateFixed, MapPin, Send, Trash2 } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Linking, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
 import { ErroDrena } from '@/dados/DrenaRepo';
 import { distanciaM } from '@/dados/geo';
@@ -86,15 +86,17 @@ export default function Denunciar() {
   async function tirarFoto() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Sem acesso à câmera', 'Você pode escolher uma foto da galeria.');
+      Alert.alert(
+        'Precisamos da câmera',
+        'Para evitar fotos antigas ou de outros lugares, a denúncia só aceita foto tirada na hora. Libere a câmera nas configurações do celular.',
+        [
+          { text: 'Agora não', style: 'cancel' },
+          { text: 'Abrir configurações', onPress: () => Linking.openSettings() },
+        ],
+      );
       return;
     }
     const resultado = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.6 });
-    if (!resultado.canceled) setFoto(resultado.assets[0].uri);
-  }
-
-  async function escolherDaGaleria() {
-    const resultado = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6 });
     if (!resultado.canceled) setFoto(resultado.assets[0].uri);
   }
 
@@ -175,20 +177,20 @@ export default function Denunciar() {
               </View>
             </Animated.View>
           ) : (
-            <View style={styles.semFoto}>
-              <Pressable onPress={tirarFoto} accessibilityRole="button" style={styles.opcaoFoto}>
-                <Camera size={28} color={cores.primaria} strokeWidth={1.9} />
-                <Texto variante="destaque" cor={cores.primaria}>
-                  Tirar foto
-                </Texto>
-              </Pressable>
-              <Pressable onPress={escolherDaGaleria} accessibilityRole="button" style={styles.opcaoFoto}>
-                <ImagePlus size={28} color={cores.primaria} strokeWidth={1.9} />
-                <Texto variante="destaque" cor={cores.primaria}>
-                  Galeria
-                </Texto>
-              </Pressable>
-            </View>
+            <Pressable
+              onPress={tirarFoto}
+              accessibilityRole="button"
+              accessibilityHint="Abre a câmera. Só vale foto tirada na hora."
+              style={styles.opcaoFoto}
+            >
+              <Camera size={32} color={cores.primaria} strokeWidth={1.9} />
+              <Texto variante="destaque" cor={cores.primaria}>
+                Tirar foto agora
+              </Texto>
+              <Texto variante="pequeno" cor={cores.textoSec}>
+                Só vale foto tirada na hora, no local
+              </Texto>
+            </Pressable>
           )}
         </Entrada>
 
@@ -317,10 +319,8 @@ const styles = StyleSheet.create({
   bloco: { gap: espaco.sm },
   flex: { flex: 1 },
   linha: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  semFoto: { flexDirection: 'row', gap: espaco.md },
   opcaoFoto: {
-    flex: 1,
-    minHeight: 120,
+    minHeight: 140,
     borderRadius: 18,
     borderWidth: 2,
     borderStyle: 'dashed',

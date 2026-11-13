@@ -37,7 +37,7 @@
         "expo-image-picker",
         {
           "cameraPermission": "Para tirar a foto do lixo que você quer denunciar.",
-          "photosPermission": "Para escolher uma foto do lixo que você quer denunciar."
+          "photosPermission": false
         }
       ],
       [
