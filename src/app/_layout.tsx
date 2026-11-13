@@ -18,6 +18,8 @@ function Rotas() {
       </Stack.Protected>
       <Stack.Protected guard={logado}>
         <Stack.Screen name="(abas)" />
+                <Stack.Screen name="ocorrencia/[id]" />
+        <Stack.Screen name="perfil" options={{ presentation: 'modal' }} />
       </Stack.Protected>
     </Stack>
   );
