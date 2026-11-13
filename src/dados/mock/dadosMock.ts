@@ -66,10 +66,10 @@ export const OCORRENCIAS: OcorrenciaMock[] = [
 ];
 
 export const BUEIROS: Bueiro[] = [
-  { id: 'B-01', latitude: -23.5008, longitude: -46.4543, obstrucao: 85, gasDetectado: true, ultimaLeitura: horasAtras(0.2), ocorrenciaId: 'oc-1' },
-  { id: 'B-02', latitude: -23.4962, longitude: -46.4508, obstrucao: 60, gasDetectado: false, ultimaLeitura: horasAtras(0.3) },
-  { id: 'B-03', latitude: -23.494, longitude: -46.455, obstrucao: 30, gasDetectado: false, ultimaLeitura: horasAtras(0.5) },
-  { id: 'B-04', latitude: -23.4995, longitude: -46.4488, obstrucao: 10, gasDetectado: false, ultimaLeitura: horasAtras(0.4) },
+  { id: 'B-01', endereco: 'Trav. do Córrego', latitude: -23.5008, longitude: -46.4543, obstrucao: 85, gasDetectado: true, ultimaLeitura: horasAtras(0.2), ocorrenciaId: 'oc-1' },
+  { id: 'B-02', endereco: 'R. Erva Doce', latitude: -23.4962, longitude: -46.4508, obstrucao: 60, gasDetectado: false, ultimaLeitura: horasAtras(0.3) },
+  { id: 'B-03', endereco: 'R. Pantanal', latitude: -23.494, longitude: -46.455, obstrucao: 30, gasDetectado: false, ultimaLeitura: horasAtras(0.5) },
+  { id: 'B-04', endereco: 'R. Lagoa Azul', latitude: -23.4995, longitude: -46.4488, obstrucao: 10, gasDetectado: false, ultimaLeitura: horasAtras(0.4) },
 ];
 
 // Chuva prevista para cada hora do dia (0h a 23h), em mm. Pico às 18h.

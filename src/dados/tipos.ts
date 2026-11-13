@@ -54,6 +54,7 @@ export type Bueiro = {
   obstrucao: number; // 0 a 100 (%)
   gasDetectado: boolean;
   ultimaLeitura: string;
+  endereco: string;
   ocorrenciaId?: string;
 };
 
