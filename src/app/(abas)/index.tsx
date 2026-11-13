@@ -25,7 +25,7 @@ function ItemPerto({ ocorrencia, distancia }: Perto) {
 
   return (
     <Pressable
-      onPress={() => router.push(`/ocorrencia/${ocorrencia.id}`)}
+      onPress={() => router.push({ pathname: '/ocorrencia/[id]', params: { id: ocorrencia.id } })}
       accessibilityRole="button"
       accessibilityLabel={`${titulo} a ${distancia} metros, ${ocorrencia.endereco}, ${situacao}`}
       style={styles.perto}

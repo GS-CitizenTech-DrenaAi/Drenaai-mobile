@@ -13,7 +13,7 @@ export function ItemOcorrencia({ ocorrencia }: { ocorrencia: Ocorrencia }) {
 
   return (
     <Pressable
-      onPress={() => router.push(`/ocorrencia/${ocorrencia.id}`)}
+      onPress={() => router.push({ pathname: '/ocorrencia/[id]', params: { id: ocorrencia.id } })}
       accessibilityRole="button"
       accessibilityLabel={`${titulo}, ${detalhe}, ${rotuloStatus(ocorrencia.status)}`}
       accessibilityHint="Abre o acompanhamento da denúncia"

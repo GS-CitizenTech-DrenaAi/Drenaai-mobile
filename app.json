@@ -32,6 +32,19 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Para tirar a foto do lixo que você quer denunciar.",
+          "photosPermission": "Para escolher uma foto do lixo que você quer denunciar."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Para marcar onde está o lixo e mostrar o que há perto de você."
+        }
       ]
     ],
     "experiments": {
