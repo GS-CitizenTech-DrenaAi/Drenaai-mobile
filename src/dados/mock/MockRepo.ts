@@ -2,6 +2,7 @@ import { DrenaRepo, ErroDrena } from '../DrenaRepo';
 import { arredondar, distanciaM } from '../geo';
 import { NovaOcorrencia, Ocorrencia, Status, Tipo, Usuario } from '../tipos';
 import {
+  BAIRRO,
   BUEIROS,
   CHUVA_FORTE,
   OCORRENCIAS,
@@ -133,7 +134,7 @@ export class MockRepo implements DrenaRepo {
       latitude: nova.latitude,
       longitude: nova.longitude,
       endereco: nova.endereco,
-      bairro: 'Jardim Pantanal',
+      bairro: BAIRRO,
       severidade: SEVERIDADE_POR_TIPO[nova.tipo],
       v: this.vDoLocal(nova.latitude, nova.longitude),
       status: 'NA_FILA',

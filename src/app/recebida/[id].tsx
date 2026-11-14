@@ -4,6 +4,7 @@ import { CircleCheck, Sparkles } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming, ZoomIn } from 'react-native-reanimated';
+import { BAIRRO } from '@/dados/mock/dadosMock';
 import { repo } from '@/dados/repo';
 import { faixaSeveridade, formatarNumero, rotuloTipo } from '@/dados/textos';
 import { Ocorrencia } from '@/dados/tipos';
@@ -45,7 +46,7 @@ export default function Recebida() {
   const [chuva12h, setChuva12h] = useState(0);
 
   useEffect(() => {
-    Promise.all([repo.obterOcorrencia(id), repo.previsao('Jardim Pantanal')]).then(([o, p]) => {
+    Promise.all([repo.obterOcorrencia(id), repo.previsao(BAIRRO)]).then(([o, p]) => {
       setOcorrencia(o);
       setChuva12h(p.chuvaMm12h);
     });

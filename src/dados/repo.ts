@@ -1,4 +1,4 @@
+import { ApiRepo } from './ApiRepo';
 import { DrenaRepo } from './DrenaRepo';
-import { MockRepo } from './mock/MockRepo';
 
-export const repo: DrenaRepo = new MockRepo();
+export const repo: DrenaRepo = new ApiRepo();

@@ -1,9 +1,9 @@
 import { Bueiro, Ocorrencia, Previsao, Status, Usuario } from '../tipos';
 
-export const BAIRRO = 'Jardim Pantanal';
-export const CENTRO_BAIRRO = { latitude: -23.4975, longitude: -46.452 };
-// Ponto onde o vídeo é gravado (localização simulada do emulador).
-export const PONTO_GRAVACAO = { latitude: -23.496, longitude: -46.4505 };
+export const BAIRRO = 'Vale do Anhangabaú';
+export const CENTRO_BAIRRO = { latitude: -23.5453, longitude: -46.6381 };
+// Ponto de referência no Vale do Anhangabaú (Av. São João, 290).
+export const PONTO_GRAVACAO = { latitude: -23.5448, longitude: -46.6386 };
 
 export const CHUVA_FORTE = true;
 
@@ -11,7 +11,11 @@ export const USUARIOS: (Usuario & { senha: string })[] = [
   { id: 'u-1', nome: 'Ana Souza', email: 'ana@teste.com', senha: 'senha123' },
 ];
 
-export const VIAS = [{ nome: 'R. Erva Doce', ...PONTO_GRAVACAO, v: 0.9 }];
+export const VIAS = [
+  { nome: 'Av. São João, 290', ...PONTO_GRAVACAO, v: 0.9 },
+  { nome: 'Rua Formosa, 95', latitude: -23.5461, longitude: -46.6388, v: 0.9 },
+  { nome: 'Praça da Bandeira, 40', latitude: -23.5493, longitude: -46.6391, v: 0.95 },
+];
 
 function horasAtras(h: number): string {
   return new Date(Date.now() - h * 3600 * 1000).toISOString();
@@ -27,49 +31,49 @@ export type OcorrenciaMock = Omit<Ocorrencia, 'ipc' | 'posicaoFila' | 'parcelasI
 
 export const OCORRENCIAS: OcorrenciaMock[] = [
   {
-    id: 'oc-1', tipo: 'BUEIRO_ENTUPIDO', descricao: 'Bueiro tomado por lixo e lama.', fotoUrl: '',
-    latitude: -23.501, longitude: -46.4545, endereco: 'Trav. do Córrego, 40', bairro: BAIRRO,
+    id: 'oc-1', tipo: 'BUEIRO_ENTUPIDO', descricao: 'Bueiro tomado por lixo e lama na baixada.', fotoUrl: '',
+    latitude: -23.5493, longitude: -46.6391, endereco: 'Praça da Bandeira, 40', bairro: BAIRRO,
     severidade: 0.95, v: 0.95, status: 'EM_ATENDIMENTO', criadaEm: horasAtras(30),
     usuarioId: 'u-2', historicoStatus: historico('EM_ATENDIMENTO', 30), confirmacoes: 4,
     confianca: 0.91, justificativa: 'Grade do bueiro totalmente coberta por lixo.',
   },
   {
-    id: 'oc-2', tipo: 'ENTULHO', descricao: 'Restos de obra na calçada, perto do bueiro.', fotoUrl: '',
-    latitude: -23.49627, longitude: -46.4505, endereco: 'R. Erva Doce, 112', bairro: BAIRRO,
+    id: 'oc-2', tipo: 'ENTULHO', descricao: 'Restos de obra na calçada, perto do bueiro do metrô.', fotoUrl: '',
+    latitude: -23.5461, longitude: -46.6388, endereco: 'Rua Formosa, 95', bairro: BAIRRO,
     severidade: 0.7, v: 0.9, status: 'NA_FILA', criadaEm: horasAtras(20),
     usuarioId: 'u-3', historicoStatus: historico('NA_FILA', 20), confirmacoes: 1,
   },
   {
     id: 'oc-3', tipo: 'SACOS_LIXO', descricao: 'Sacos de lixo deixados na esquina.', fotoUrl: '',
-    latitude: -23.4925, longitude: -46.456, endereco: 'R. das Palmeiras, 300', bairro: BAIRRO,
+    latitude: -23.5456, longitude: -46.6358, endereco: 'Rua Líbero Badaró, 425', bairro: BAIRRO,
     severidade: 0.5, v: 0.2, status: 'NA_FILA', criadaEm: horasAtras(26),
     usuarioId: 'u-1', historicoStatus: historico('NA_FILA', 26), confirmacoes: 2,
   },
   {
-    id: 'oc-4', tipo: 'OUTRO', descricao: 'Pneus velhos no canteiro.', fotoUrl: '',
-    latitude: -23.499, longitude: -46.448, endereco: 'R. Lagoa Azul, 15', bairro: BAIRRO,
+    id: 'oc-4', tipo: 'OUTRO', descricao: 'Pneus velhos no canteiro próximo ao viaduto.', fotoUrl: '',
+    latitude: -23.5466, longitude: -46.6401, endereco: 'Rua Coronel Xavier de Toledo, 23', bairro: BAIRRO,
     severidade: 0.4, v: 0.2, status: 'VALIDADA', criadaEm: horasAtras(5),
     usuarioId: 'u-4', historicoStatus: historico('VALIDADA', 5), confirmacoes: 0,
   },
   {
-    id: 'oc-5', tipo: 'LIXO_ORGANICO', descricao: 'Restos de feira na rua.', fotoUrl: '',
-    latitude: -23.495, longitude: -46.4535, endereco: 'R. Pantanal, 78', bairro: BAIRRO,
+    id: 'oc-5', tipo: 'LIXO_ORGANICO', descricao: 'Restos de feira na calçada.', fotoUrl: '',
+    latitude: -23.5435, longitude: -46.6389, endereco: 'Av. São João, 439', bairro: BAIRRO,
     severidade: 0.55, v: 0.5, status: 'CONCLUIDA', criadaEm: horasAtras(72),
     usuarioId: 'u-1', historicoStatus: historico('CONCLUIDA', 72), confirmacoes: 3,
   },
   {
-    id: 'oc-6', tipo: 'MOVEL_VOLUMOSO', descricao: 'Sofá velho abandonado.', fotoUrl: '',
-    latitude: -23.4985, longitude: -46.45, endereco: 'Av. Jardim Pantanal, 900', bairro: BAIRRO,
+    id: 'oc-6', tipo: 'MOVEL_VOLUMOSO', descricao: 'Sofá velho abandonado perto da ladeira.', fotoUrl: '',
+    latitude: -23.5477, longitude: -46.6412, endereco: 'Rua Quirino de Andrade, 215', bairro: BAIRRO,
     severidade: 0.5, v: 0.5, status: 'CONCLUIDA', criadaEm: horasAtras(96),
     usuarioId: 'u-2', historicoStatus: historico('CONCLUIDA', 96), confirmacoes: 1,
   },
 ];
 
 export const BUEIROS: Bueiro[] = [
-  { id: 'B-01', endereco: 'Trav. do Córrego', latitude: -23.5008, longitude: -46.4543, obstrucao: 85, gasDetectado: true, ultimaLeitura: horasAtras(0.2), ocorrenciaId: 'oc-1' },
-  { id: 'B-02', endereco: 'R. Erva Doce', latitude: -23.4962, longitude: -46.4508, obstrucao: 60, gasDetectado: false, ultimaLeitura: horasAtras(0.3) },
-  { id: 'B-03', endereco: 'R. Pantanal', latitude: -23.494, longitude: -46.455, obstrucao: 30, gasDetectado: false, ultimaLeitura: horasAtras(0.5) },
-  { id: 'B-04', endereco: 'R. Lagoa Azul', latitude: -23.4995, longitude: -46.4488, obstrucao: 10, gasDetectado: false, ultimaLeitura: horasAtras(0.4) },
+  { id: 'B-01', endereco: 'Praça da Bandeira', latitude: -23.5493, longitude: -46.6391, obstrucao: 85, gasDetectado: true, ultimaLeitura: horasAtras(0.2), ocorrenciaId: 'oc-1' },
+  { id: 'B-02', endereco: 'Rua Formosa', latitude: -23.5461, longitude: -46.6388, obstrucao: 60, gasDetectado: false, ultimaLeitura: horasAtras(0.3) },
+  { id: 'B-03', endereco: 'Av. São João', latitude: -23.5448, longitude: -46.6386, obstrucao: 30, gasDetectado: false, ultimaLeitura: horasAtras(0.5) },
+  { id: 'B-04', endereco: 'Rua Líbero Badaró', latitude: -23.5456, longitude: -46.6358, obstrucao: 10, gasDetectado: false, ultimaLeitura: horasAtras(0.4) },
 ];
 
 // Chuva prevista para cada hora do dia (0h a 23h), em mm. Pico às 18h.

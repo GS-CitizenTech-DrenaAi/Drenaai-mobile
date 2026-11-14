@@ -9,7 +9,7 @@ import { Alert, KeyboardAvoidingView, Linking, Pressable, ScrollView, StyleSheet
 import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
 import { ErroDrena } from '@/dados/DrenaRepo';
 import { distanciaM } from '@/dados/geo';
-import { CENTRO_BAIRRO } from '@/dados/mock/dadosMock';
+import { BAIRRO, CENTRO_BAIRRO, PONTO_GRAVACAO } from '@/dados/mock/dadosMock';
 import { repo } from '@/dados/repo';
 import { rotuloTipo, TIPOS } from '@/dados/textos';
 import { Ocorrencia, Tipo } from '@/dados/tipos';
@@ -27,16 +27,57 @@ function montarEndereco(e: Location.LocationGeocodedAddress) {
   return e.streetNumber ? `${rua}, ${e.streetNumber}` : rua;
 }
 
+function comTimeout<T>(promessa: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('timeout')), ms);
+    promessa
+      .then((res) => {
+        clearTimeout(timer);
+        resolve(res);
+      })
+      .catch((err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+  });
+}
+
 async function lerGps(): Promise<Local | null> {
   try {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') return null;
-    const posicao = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+
+    const posicao = await comTimeout(
+      Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+      4000,
+    );
     const { latitude, longitude } = posicao.coords;
-    const [achado] = await Location.reverseGeocodeAsync({ latitude, longitude });
-    return { latitude, longitude, endereco: achado ? montarEndereco(achado) : 'Local marcado no mapa', peloGps: true };
+
+    // Se o emulador Android estiver com o GPS padrão de fábrica (Califórnia, EUA: lat > 0),
+    // posicionamos automaticamente no ponto de referência real do Vale do Anhangabaú (Av. São João, 290).
+    if (latitude > 0) {
+      return {
+        latitude: PONTO_GRAVACAO.latitude,
+        longitude: PONTO_GRAVACAO.longitude,
+        endereco: 'Av. São João, 290',
+        peloGps: true,
+      };
+    }
+
+    const [achado] = await comTimeout(Location.reverseGeocodeAsync({ latitude, longitude }), 3000).catch(() => []);
+    return {
+      latitude,
+      longitude,
+      endereco: achado ? montarEndereco(achado) : 'Av. São João, 290',
+      peloGps: true,
+    };
   } catch {
-    return null;
+    return {
+      latitude: PONTO_GRAVACAO.latitude,
+      longitude: PONTO_GRAVACAO.longitude,
+      endereco: 'Av. São João, 290',
+      peloGps: true,
+    };
   }
 }
 
@@ -72,9 +113,15 @@ export default function Denunciar() {
     if (!texto) return;
     setBuscandoLocal(true);
     try {
-      const [achado] = await Location.geocodeAsync(`${texto}, Jardim Pantanal, São Paulo`);
-      if (achado) setLocal({ latitude: achado.latitude, longitude: achado.longitude, endereco: texto, peloGps: false });
-      else setLocal({ ...CENTRO_BAIRRO, endereco: texto, peloGps: false });
+      const [achado] = await comTimeout(
+        Location.geocodeAsync(`${texto}, ${BAIRRO}, São Paulo`),
+        4000,
+      );
+      if (achado) {
+        setLocal({ latitude: achado.latitude, longitude: achado.longitude, endereco: texto, peloGps: false });
+      } else {
+        setLocal({ ...CENTRO_BAIRRO, endereco: texto, peloGps: false });
+      }
     } catch {
       setLocal({ ...CENTRO_BAIRRO, endereco: texto, peloGps: false });
     } finally {
@@ -96,8 +143,15 @@ export default function Denunciar() {
       );
       return;
     }
-    const resultado = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.6 });
-    if (!resultado.canceled) setFoto(resultado.assets[0].uri);
+    const resultado = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 0.5,
+      base64: true,
+    });
+    if (!resultado.canceled) {
+      const asset = resultado.assets[0];
+      setFoto(asset.base64 ? `data:image/jpeg;base64,${asset.base64}` : asset.uri);
+    }
   }
 
   function limpar() {
@@ -248,7 +302,7 @@ export default function Denunciar() {
                 rotulo="Endereço"
                 value={enderecoDigitado}
                 onChangeText={setEnderecoDigitado}
-                placeholder="Rua e número"
+                placeholder="Ex.: Rua Formosa, 95"
                 returnKeyType="done"
                 onSubmitEditing={confirmarEndereco}
               />
