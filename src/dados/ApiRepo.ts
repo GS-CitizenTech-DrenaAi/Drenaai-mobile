@@ -26,25 +26,28 @@ type ParcelasIpcVoApi = {
   v: number;
 };
 
-type OcorrenciaDetalheApi = {
+type OcorrenciaResumoApi = {
   id: string;
   origem: string;
   tipo: Tipo;
   descricao: string;
-  fotoUrl?: string | null;
-  latitude: number;
-  longitude: number;
   bairro: string;
   severidade: number;
   ipc: number;
   status: Status;
   criadaEm: string;
-  historicoStatus?: { status: Status; dataHora: string }[];
   endereco?: EnderecoVoApi | null;
+  fotoUrl?: string | null;
+  posicaoFila?: number | null;
+};
+
+type OcorrenciaDetalheApi = OcorrenciaResumoApi & {
+  latitude: number;
+  longitude: number;
+  historicoStatus?: { status: Status; dataHora: string }[];
   confianca?: number | null;
   justificativa?: string | null;
   parcelasIpc?: ParcelasIpcVoApi | null;
-  posicaoFila?: number | null;
   confirmacoes?: number | null;
   usuarioId?: string | null;
 };
@@ -65,6 +68,16 @@ function extrairMensagemErro(corpo: ErroPayloadApi | null, padrao: string): stri
     return corpo.title;
   }
   return padrao;
+}
+
+function normalizarTipo(tipo: string): Tipo {
+  const t = (tipo ?? '').trim().toUpperCase();
+  if (t === 'OBSTRUCAO_BUEIRO' || t === 'BUEIRO_ENTUPIDO') return 'BUEIRO_ENTUPIDO';
+  if (t === 'LIXO_ACUMULADO' || t === 'SACOS_LIXO') return 'SACOS_LIXO';
+  if (t === 'ENTULHO' || t === 'MOVEL_VOLUMOSO' || t === 'LIXO_ORGANICO' || t === 'OUTRO') {
+    return t as Tipo;
+  }
+  return 'OUTRO';
 }
 
 function normalizarHistorico(
@@ -259,6 +272,85 @@ export class ApiRepo extends MockRepo {
     };
   }
 
+  private mapearOcorrencia(corpo: OcorrenciaResumoApi | OcorrenciaDetalheApi): Ocorrencia {
+    const detalhe = corpo as Partial<OcorrenciaDetalheApi>;
+    return {
+      id: String(corpo.id),
+      tipo: normalizarTipo(corpo.tipo),
+      descricao: corpo.descricao ?? '',
+      fotoUrl: corpo.fotoUrl ?? '',
+      latitude: corpo.endereco?.latitude ?? detalhe.latitude ?? -23.5448,
+      longitude: corpo.endereco?.longitude ?? detalhe.longitude ?? -46.6386,
+      endereco: corpo.endereco?.logradouro ?? 'Local marcado no mapa',
+      bairro: corpo.endereco?.bairro ?? corpo.bairro,
+      severidade: corpo.severidade,
+      status: corpo.status,
+      ipc: corpo.ipc,
+      criadaEm: corpo.criadaEm,
+      usuarioId: detalhe.usuarioId ? String(detalhe.usuarioId) : (this.usuarioLogadoId ?? 'anonimo'),
+      historicoStatus: normalizarHistorico(corpo.criadaEm, detalhe.historicoStatus),
+      confirmacoes: detalhe.confirmacoes ?? 0,
+      posicaoFila: corpo.posicaoFila ?? undefined,
+      confianca: detalhe.confianca ?? undefined,
+      justificativa: detalhe.justificativa ?? undefined,
+      parcelasIpc: detalhe.parcelasIpc ?? undefined,
+    };
+  }
+
+  override async listarOcorrencias(bairro: string): Promise<Ocorrencia[]> {
+    let resposta: Response;
+    try {
+      const query = bairro.trim() ? `?bairro=${encodeURIComponent(bairro.trim())}` : '';
+      resposta = await fetch(`${API_BASE_URL}/api/ocorrencias${query}`, {
+        method: 'GET',
+        headers: this.headersAutenticados(false),
+      });
+    } catch {
+      throw new ErroDrena('Não foi possível conectar ao servidor DrenaAi para carregar o bairro.');
+    }
+
+    if (resposta.status === 401) {
+      throw new ErroDrena('Sua sessão expirou. Faça login novamente.');
+    }
+
+    const corpo = (await resposta.json().catch(() => null)) as
+      | OcorrenciaResumoApi[]
+      | ErroPayloadApi
+      | null;
+
+    if (!resposta.ok || !Array.isArray(corpo)) {
+      const erroPayload = !Array.isArray(corpo) ? corpo : null;
+      throw new ErroDrena(extrairMensagemErro(erroPayload, 'Não foi possível carregar as ocorrências do bairro.'));
+    }
+
+    return corpo.map((item) => this.mapearOcorrencia(item));
+  }
+
+  override async fila(bairro: string): Promise<Ocorrencia[]> {
+    let resposta: Response;
+    try {
+      const query = bairro.trim() ? `?bairro=${encodeURIComponent(bairro.trim())}` : '';
+      resposta = await fetch(`${API_BASE_URL}/api/fila${query}`, {
+        method: 'GET',
+        headers: this.headersAutenticados(false),
+      });
+    } catch {
+      throw new ErroDrena('Não foi possível conectar ao servidor DrenaAi para carregar a fila do mapa.');
+    }
+
+    const corpo = (await resposta.json().catch(() => null)) as
+      | OcorrenciaResumoApi[]
+      | ErroPayloadApi
+      | null;
+
+    if (!resposta.ok || !Array.isArray(corpo)) {
+      const erroPayload = !Array.isArray(corpo) ? corpo : null;
+      throw new ErroDrena(extrairMensagemErro(erroPayload, 'Não foi possível carregar a fila de coleta.'));
+    }
+
+    return corpo.map((item) => this.mapearOcorrencia(item));
+  }
+
   override async obterOcorrencia(id: string): Promise<Ocorrencia> {
     if (id.startsWith('oc-')) {
       return await super.obterOcorrencia(id);
@@ -279,26 +371,6 @@ export class ApiRepo extends MockRepo {
       throw new ErroDrena(extrairMensagemErro(corpo, 'Denúncia não encontrada.'));
     }
 
-    return {
-      id: String(corpo.id),
-      tipo: corpo.tipo,
-      descricao: corpo.descricao ?? '',
-      fotoUrl: corpo.fotoUrl ?? '',
-      latitude: corpo.endereco?.latitude ?? corpo.latitude,
-      longitude: corpo.endereco?.longitude ?? corpo.longitude,
-      endereco: corpo.endereco?.logradouro ?? 'Local marcado no mapa',
-      bairro: corpo.endereco?.bairro ?? corpo.bairro,
-      severidade: corpo.severidade,
-      status: corpo.status,
-      ipc: corpo.ipc,
-      criadaEm: corpo.criadaEm,
-      usuarioId: corpo.usuarioId ? String(corpo.usuarioId) : (this.usuarioLogadoId ?? 'anonimo'),
-      historicoStatus: normalizarHistorico(corpo.criadaEm, corpo.historicoStatus),
-      confirmacoes: corpo.confirmacoes ?? 0,
-      posicaoFila: corpo.posicaoFila ?? undefined,
-      confianca: corpo.confianca ?? undefined,
-      justificativa: corpo.justificativa ?? undefined,
-      parcelasIpc: corpo.parcelasIpc ?? undefined,
-    };
+    return this.mapearOcorrencia(corpo);
   }
 }

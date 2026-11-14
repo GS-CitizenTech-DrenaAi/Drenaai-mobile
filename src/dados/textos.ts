@@ -25,8 +25,8 @@ export function rotuloStatus(status: Status): string {
   return ROTULOS_STATUS[status];
 }
 
-export function rotuloTipo(tipo: Tipo): string {
-  return ROTULOS_TIPO[tipo];
+export function rotuloTipo(tipo: Tipo | string): string {
+  return ROTULOS_TIPO[tipo as Tipo] ?? tipo;
 }
 
 export function faixaSeveridade(s: number): 'Baixa' | 'Média' | 'Alta' | 'Crítica' {
