@@ -5,6 +5,7 @@ import { BadgeCheck, CheckCheck, ChevronLeft, Clock, ImageIcon, Inbox, LucideIco
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import { BAIRRO } from '@/dados/mock/dadosMock';
 import { repo } from '@/dados/repo';
 import { diaEHora, faixaSeveridade, formatarNumero, ORDEM_STATUS, rotuloStatus, rotuloTipo } from '@/dados/textos';
 import { Ocorrencia, Status } from '@/dados/tipos';
@@ -39,7 +40,7 @@ export default function Rastreio() {
   const [chuva12h, setChuva12h] = useState(0);
 
   useEffect(() => {
-    Promise.all([repo.obterOcorrencia(id), repo.previsao('Jardim Pantanal')]).then(([o, p]) => {
+    Promise.all([repo.obterOcorrencia(id), repo.previsao(BAIRRO)]).then(([o, p]) => {
       setOcorrencia(o);
       setChuva12h(p.chuvaMm12h);
     });
