@@ -50,12 +50,16 @@ export type NovaOcorrencia = {
 
 export type Bueiro = {
   id: string;
+  codigoSensor?: string;
   latitude: number;
   longitude: number;
   obstrucao: number; // 0 a 100 (%)
+  distanciaCm?: number;
+  gasPpm?: number;
   gasDetectado: boolean;
   ultimaLeitura: string;
   endereco: string;
+  bairro?: string;
   ocorrenciaId?: string;
 };
 

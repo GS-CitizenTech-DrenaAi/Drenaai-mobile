@@ -14,7 +14,7 @@ export interface DrenaRepo {
   confirmar(id: string): Promise<void>;
 
   previsao(bairro: string): Promise<Previsao>;
-  listarBueiros(): Promise<Bueiro[]>;
+  listarBueiros(bairro?: string): Promise<Bueiro[]>;
   meusNumeros(): Promise<{ denuncias: number; concluidas: number; confirmacoes: number }>;
 }
 

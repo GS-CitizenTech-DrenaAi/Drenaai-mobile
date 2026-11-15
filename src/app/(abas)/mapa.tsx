@@ -37,9 +37,10 @@ export default function Mapa() {
 
   useFocusEffect(
     useCallback(() => {
-      Promise.all([repo.fila(BAIRRO), repo.listarBueiros()]).then(([f, b]) => {
+      Promise.all([repo.fila(BAIRRO), repo.listarBueiros(BAIRRO)]).then(([f, b]) => {
         setFila(f);
         setBueiros(b);
+        setSensor((atual) => (atual ? b.find((item) => item.id === atual.id) ?? null : null));
       });
     }, []),
   );
@@ -58,6 +59,12 @@ export default function Mapa() {
   const termo = busca.trim().toLowerCase();
   const filaVisivel = fila.filter(
     (o) => !termo || rotuloTipo(o.tipo).toLowerCase().includes(termo) || o.endereco.toLowerCase().includes(termo),
+  );
+  const bueirosVisiveis = bueiros.filter(
+    (b) =>
+      !termo ||
+      b.endereco.toLowerCase().includes(termo) ||
+      (b.codigoSensor ?? b.id).toLowerCase().includes(termo),
   );
   const listaTexto = aberta ? filaVisivel : filaVisivel.slice(0, 2);
 
@@ -95,7 +102,7 @@ export default function Mapa() {
             );
           })}
         {filtro === 'sensores' &&
-          bueiros.map((b) => {
+          bueirosVisiveis.map((b) => {
             const estado = estadoSensor(b.obstrucao);
             const selecionado = sensor?.id === b.id;
             return (
@@ -248,9 +255,9 @@ export default function Mapa() {
           <View style={styles.linhaEntre}>
             <View style={styles.flex}>
               <Texto variante="pequeno" cor={cores.textoSec}>
-                Sensor {sensor.id} · ESP32
+                Sensor {sensor.codigoSensor ?? sensor.id} · ESP32
               </Texto>
-              <Texto variante="titulo">Bueiro da {sensor.endereco}</Texto>
+              <Texto variante="titulo">{sensor.endereco}</Texto>
             </View>
             <View style={[styles.estado, { backgroundColor: estadoSensor(sensor.obstrucao).cor.fundo }]}>
               <Texto variante="pequeno" cor={estadoSensor(sensor.obstrucao).cor.texto} style={styles.negrito}>
@@ -309,24 +316,38 @@ export default function Mapa() {
           <Texto variante="pequeno" style={styles.centralizado}>
             Toque num sensor no mapa ou na lista abaixo para ver a obstrução do bueiro.
           </Texto>
-          <View style={styles.chipsSensor}>
-            {bueiros.map((b) => {
-              const estado = estadoSensor(b.obstrucao);
-              return (
-                <Pressable
-                  key={b.id}
-                  onPress={() => setSensor(b)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Sensor ${b.id}, ${b.endereco}: ${b.obstrucao}% obstruído, ${estado.texto}`}
-                  style={[styles.chipSensor, { backgroundColor: estado.cor.fundo }]}
-                >
-                  <Texto variante="pequeno" cor={estado.cor.texto} style={styles.negrito}>
-                    {b.endereco} · {b.obstrucao}%
-                  </Texto>
-                </Pressable>
-              );
-            })}
-          </View>
+          {bueirosVisiveis.length > 0 ? (
+            <ScrollView
+              style={styles.listaSensores}
+              contentContainerStyle={styles.chipsSensor}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator
+            >
+              {bueirosVisiveis.map((b) => {
+                const estado = estadoSensor(b.obstrucao);
+                return (
+                  <Pressable
+                    key={b.id}
+                    onPress={() => setSensor(b)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Sensor ${b.codigoSensor ?? b.id}, ${b.endereco}: ${b.obstrucao}% obstruído, ${estado.texto}`}
+                    style={[styles.chipSensor, { backgroundColor: estado.cor.fundo }]}
+                  >
+                    <Texto variante="pequeno" cor={estado.cor.texto} style={[styles.negrito, styles.flex]} numberOfLines={1}>
+                      {b.endereco}
+                    </Texto>
+                    <Texto variante="pequeno" cor={estado.cor.texto} style={styles.negrito}>
+                      {b.obstrucao}%
+                    </Texto>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          ) : (
+            <Texto variante="pequeno" cor={cores.textoSec} style={styles.vazio}>
+              Nenhum sensor encontrado para este bairro.
+            </Texto>
+          )}
         </View>
       )}
     </View>
@@ -447,8 +468,19 @@ const styles = StyleSheet.create({
     backgroundColor: cores.branco,
     borderRadius: 16,
     padding: espaco.md,
+    gap: espaco.sm,
     ...sombra,
   },
-  chipsSensor: { flexDirection: 'row', flexWrap: 'wrap', gap: espaco.sm, marginTop: espaco.sm },
-  chipSensor: { minHeight: 40, justifyContent: 'center', paddingHorizontal: espaco.md, borderRadius: raio.pilula },
+  listaSensores: { maxHeight: 92 },
+  chipsSensor: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: espaco.sm },
+  chipSensor: {
+    width: '48.5%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+    minHeight: 40,
+    paddingHorizontal: 10,
+    borderRadius: raio.pilula,
+  },
 });

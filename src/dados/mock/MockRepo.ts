@@ -183,8 +183,9 @@ export class MockRepo implements DrenaRepo {
     return this.previsaoAtual();
   }
 
-  async listarBueiros() {
+  async listarBueiros(bairro?: string) {
     await esperar();
+    void bairro;
     return BUEIROS;
   }
 
