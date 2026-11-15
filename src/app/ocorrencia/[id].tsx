@@ -1,13 +1,13 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { BadgeCheck, CheckCheck, ChevronLeft, Clock, ImageIcon, Inbox, LucideIcon, Truck, Users } from 'lucide-react-native';
+import { BadgeCheck, CheckCheck, ChevronLeft, Clock, ImageIcon, Inbox, LucideIcon, Radio, Truck, Users } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { BAIRRO } from '@/dados/mock/dadosMock';
 import { repo } from '@/dados/repo';
-import { diaEHora, faixaSeveridade, formatarNumero, ORDEM_STATUS, rotuloStatus, rotuloTipo } from '@/dados/textos';
+import { apenasHora, diaEHora, faixaSeveridade, formatarNumero, ORDEM_STATUS, rotuloStatus, rotuloTipo } from '@/dados/textos';
 import { Ocorrencia, Status } from '@/dados/tipos';
 import { ChipPrioridade } from '@/ui/ChipPrioridade';
 import { Entrada } from '@/ui/Entrada';
@@ -91,16 +91,26 @@ export default function Rastreio() {
               {rotuloTipo(ocorrencia.tipo)}
             </Texto>
             <Texto cor={cores.textoSec}>
-              {ocorrencia.endereco} · enviada {diaEHora(ocorrencia.criadaEm).toLowerCase()}
+              {ocorrencia.endereco} · {ocorrencia.origem === 'SENSOR' ? `atualizado ${apenasHora(ocorrencia.criadaEm)}` : `enviada ${diaEHora(ocorrencia.criadaEm).toLowerCase()}`}
             </Texto>
             <View style={styles.chips}>
               <ChipPrioridade ipc={ocorrencia.ipc} />
-              <View style={styles.chipAzul} accessible accessibilityLabel={`${ocorrencia.confirmacoes} vizinhos confirmaram`}>
-                <Users size={16} color={cores.primaria} strokeWidth={2.3} />
-                <Texto variante="pequeno" cor={cores.primaria} style={styles.negrito}>
-                  {ocorrencia.confirmacoes} {ocorrencia.confirmacoes === 1 ? 'vizinho confirmou' : 'vizinhos confirmaram'}
-                </Texto>
-              </View>
+              {ocorrencia.origem === 'SENSOR' && (
+                <View style={styles.chipAzul} accessible accessibilityLabel="Sensor IoT: bueiro cheio, precisa de coleta">
+                  <Radio size={16} color={cores.primaria} strokeWidth={2.3} />
+                  <Texto variante="pequeno" cor={cores.primaria} style={styles.negrito}>
+                    Sensor IoT · bueiro cheio, precisa de coleta
+                  </Texto>
+                </View>
+              )}
+              {(ocorrencia.origem !== 'SENSOR' || ocorrencia.confirmacoes > 0) && (
+                <View style={styles.chipAzul} accessible accessibilityLabel={`${ocorrencia.confirmacoes} vizinhos confirmaram`}>
+                  <Users size={16} color={cores.primaria} strokeWidth={2.3} />
+                  <Texto variante="pequeno" cor={cores.primaria} style={styles.negrito}>
+                    {ocorrencia.confirmacoes} {ocorrencia.confirmacoes === 1 ? 'vizinho confirmou' : 'vizinhos confirmaram'}
+                  </Texto>
+                </View>
+              )}
             </View>
           </Entrada>
 

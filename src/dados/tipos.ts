@@ -17,6 +17,7 @@ export type Usuario = {
 
 export type Ocorrencia = {
   id: string;
+  origem?: 'APP' | 'SENSOR';
   tipo: Tipo;
   descricao: string;
   fotoUrl: string;

@@ -9,7 +9,13 @@ import { Texto } from './Texto';
 export function ItemOcorrencia({ ocorrencia }: { ocorrencia: Ocorrencia }) {
   const router = useRouter();
   const titulo = rotuloTipo(ocorrencia.tipo);
-  const detalhe = `${ocorrencia.endereco} · ${tempoRelativo(ocorrencia.criadaEm)}`;
+  const complemento =
+    ocorrencia.confirmacoes > 0
+      ? ` · +${ocorrencia.confirmacoes} ${ocorrencia.confirmacoes === 1 ? 'vizinho confirmou' : 'vizinhos confirmaram'}`
+      : ocorrencia.origem === 'SENSOR'
+        ? ' · Sensor: bueiro cheio'
+        : '';
+  const detalhe = `${ocorrencia.endereco} · ${tempoRelativo(ocorrencia.criadaEm)}${complemento}`;
 
   return (
     <Pressable
