@@ -39,6 +39,7 @@ type OcorrenciaResumoApi = {
   endereco?: EnderecoVoApi | null;
   fotoUrl?: string | null;
   posicaoFila?: number | null;
+  confirmacoes?: number | null;
 };
 
 type OcorrenciaDetalheApi = OcorrenciaResumoApi & {
@@ -238,6 +239,7 @@ export class ApiRepo extends MockRepo {
           parcelasIpc?: ParcelasIpcVoApi;
           posicaoFila?: number;
           criadaEm?: string;
+          confirmacoes?: number;
         })
       | null;
 
@@ -264,7 +266,7 @@ export class ApiRepo extends MockRepo {
       criadaEm,
       usuarioId: this.usuarioLogadoId ?? 'anonimo',
       historicoStatus: normalizarHistorico(criadaEm),
-      confirmacoes: 0,
+      confirmacoes: corpo.confirmacoes ?? 0,
       posicaoFila: corpo.posicaoFila ?? 1,
       confianca: corpo.confianca,
       justificativa: corpo.justificativa,
@@ -276,6 +278,7 @@ export class ApiRepo extends MockRepo {
     const detalhe = corpo as Partial<OcorrenciaDetalheApi>;
     return {
       id: String(corpo.id),
+      origem: corpo.origem === 'SENSOR' ? 'SENSOR' : 'APP',
       tipo: normalizarTipo(corpo.tipo),
       descricao: corpo.descricao ?? '',
       fotoUrl: corpo.fotoUrl ?? '',
@@ -289,7 +292,7 @@ export class ApiRepo extends MockRepo {
       criadaEm: corpo.criadaEm,
       usuarioId: detalhe.usuarioId ? String(detalhe.usuarioId) : (this.usuarioLogadoId ?? 'anonimo'),
       historicoStatus: normalizarHistorico(corpo.criadaEm, detalhe.historicoStatus),
-      confirmacoes: detalhe.confirmacoes ?? 0,
+      confirmacoes: detalhe.confirmacoes ?? corpo.confirmacoes ?? 0,
       posicaoFila: corpo.posicaoFila ?? undefined,
       confianca: detalhe.confianca ?? undefined,
       justificativa: detalhe.justificativa ?? undefined,
