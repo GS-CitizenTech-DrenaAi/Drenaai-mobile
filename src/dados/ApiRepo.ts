@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 import { ErroDrena } from './DrenaRepo';
 import { BAIRRO } from './mock/dadosMock';
 import { MockRepo } from './mock/MockRepo';
-import { NovaOcorrencia, Ocorrencia, Status, Tipo, Usuario } from './tipos';
+import { Bueiro, NovaOcorrencia, Ocorrencia, Status, Tipo, Usuario } from './tipos';
 
 const PADRAO_URL = Platform.OS === 'android' ? 'http://10.0.2.2:5239' : 'http://localhost:5239';
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? PADRAO_URL;
@@ -24,6 +24,21 @@ type ParcelasIpcVoApi = {
   s: number;
   c: number;
   v: number;
+};
+
+type SensorBueiroApi = {
+  id: string;
+  codigoSensor: string;
+  endereco: string;
+  bairro: string;
+  latitude: number;
+  longitude: number;
+  obstrucao: number;
+  distanciaCm: number;
+  gasPpm: number;
+  gasDetectado: boolean;
+  ultimaLeitura: string;
+  ocorrenciaId?: string | null;
 };
 
 type OcorrenciaResumoApi = {
@@ -375,5 +390,43 @@ export class ApiRepo extends MockRepo {
     }
 
     return this.mapearOcorrencia(corpo);
+  }
+
+  override async listarBueiros(bairro?: string): Promise<Bueiro[]> {
+    let resposta: Response;
+    try {
+      const query = bairro?.trim() ? `?bairro=${encodeURIComponent(bairro.trim())}` : '';
+      resposta = await fetch(`${API_BASE_URL}/api/telemetria/sensores${query}`, {
+        method: 'GET',
+        headers: this.headersAutenticados(false),
+      });
+    } catch {
+      throw new ErroDrena('Não foi possível conectar ao servidor DrenaAi para carregar os sensores.');
+    }
+
+    const corpo = (await resposta.json().catch(() => null)) as
+      | SensorBueiroApi[]
+      | ErroPayloadApi
+      | null;
+
+    if (!resposta.ok || !Array.isArray(corpo)) {
+      const erroPayload = !Array.isArray(corpo) ? corpo : null;
+      throw new ErroDrena(extrairMensagemErro(erroPayload, 'Não foi possível carregar os sensores do bairro.'));
+    }
+
+    return corpo.map((item) => ({
+      id: String(item.id),
+      codigoSensor: item.codigoSensor,
+      endereco: item.endereco,
+      bairro: item.bairro,
+      latitude: item.latitude,
+      longitude: item.longitude,
+      obstrucao: item.obstrucao,
+      distanciaCm: item.distanciaCm,
+      gasPpm: item.gasPpm,
+      gasDetectado: item.gasDetectado,
+      ultimaLeitura: item.ultimaLeitura,
+      ocorrenciaId: item.ocorrenciaId ? String(item.ocorrenciaId) : undefined,
+    }));
   }
 }
