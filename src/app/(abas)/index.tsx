@@ -8,6 +8,7 @@ import { BAIRRO, PONTO_GRAVACAO } from '@/dados/mock/dadosMock';
 import { repo } from '@/dados/repo';
 import { rotuloStatus, rotuloTipo } from '@/dados/textos';
 import { Ocorrencia, Previsao } from '@/dados/tipos';
+import { usePreferencias } from '@/estado/PreferenciasContext';
 import { BotaoPerfil } from '@/ui/BotaoPerfil';
 import { CardAlerta } from '@/ui/CardAlerta';
 import { CardChuva } from '@/ui/CardChuva';
@@ -50,7 +51,9 @@ export default function Bairro() {
   const [previsao, setPrevisao] = useState<Previsao | null>(null);
   const [ocorrencias, setOcorrencias] = useState<Ocorrencia[]>([]);
   const [atualizando, setAtualizando] = useState(false);
-  const [verAlerta, setVerAlerta] = useState(true);
+  const [verAlerta, setVerAlerta] = useState<boolean | null>(null);
+  const { alertas } = usePreferencias();
+  const mostrarAlerta = verAlerta ?? alertas;
 
   async function carregar() {
     const [p, lista] = await Promise.all([repo.previsao(BAIRRO), repo.listarOcorrencias(BAIRRO)]);
@@ -71,7 +74,7 @@ export default function Bairro() {
   );
 
   function aoTocarSino() {
-    if (previsao?.alerta) setVerAlerta(!verAlerta);
+    if (previsao?.alerta) setVerAlerta(!mostrarAlerta);
     else Alert.alert('Sem alertas', 'Nenhuma chuva forte prevista para hoje.');
   }
 
@@ -83,7 +86,7 @@ export default function Bairro() {
     );
   }
 
-  const modoAlerta = previsao.alerta && verAlerta;
+  const modoAlerta = previsao.alerta && mostrarAlerta;
   const perto: Perto[] = ocorrencias
     .filter((o) => o.status !== 'CONCLUIDA' && (o.tipo === 'BUEIRO_ENTUPIDO' || o.tipo === 'ENTULHO'))
     .map((o) => ({

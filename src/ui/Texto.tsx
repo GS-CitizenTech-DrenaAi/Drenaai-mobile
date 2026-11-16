@@ -1,4 +1,5 @@
-import { Text, TextProps } from 'react-native';
+import { StyleSheet, Text, TextProps, TextStyle } from 'react-native';
+import { usePreferencias } from '@/estado/PreferenciasContext';
 import { cores, fonte } from './tema';
 
 const variantes = {
@@ -15,5 +16,13 @@ type Props = TextProps & {
 };
 
 export function Texto({ variante = 'corpo', cor = cores.texto, style, ...resto }: Props) {
-  return <Text style={[variantes[variante], { color: cor }, style]} {...resto} />;
+  const { escala } = usePreferencias();
+  const junto: TextStyle = StyleSheet.flatten([variantes[variante], { color: cor }, style]) ?? {};
+  const ajustado = {
+    ...junto,
+    fontSize: (junto.fontSize ?? fonte.corpo) * escala,
+    lineHeight: junto.lineHeight ? junto.lineHeight * escala : undefined,
+  };
+
+  return <Text style={ajustado} {...resto} />;
 }

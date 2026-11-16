@@ -116,6 +116,7 @@ function normalizarHistorico(
 export class ApiRepo extends MockRepo {
   private token: string | null = null;
   private usuarioLogadoId: string | null = null;
+  private minhasDenuncias = new Set<string>();
 
   getToken(): string | null {
     return this.token;
@@ -206,6 +207,7 @@ export class ApiRepo extends MockRepo {
   override async sair(): Promise<void> {
     this.token = null;
     this.usuarioLogadoId = null;
+    this.minhasDenuncias.clear();
     await super.sair();
   }
 
@@ -266,6 +268,7 @@ export class ApiRepo extends MockRepo {
     }
 
     const criadaEm = corpo.criadaEm ?? new Date().toISOString();
+    this.minhasDenuncias.add(String(corpo.id));
     return {
       id: String(corpo.id),
       tipo: nova.tipo,
@@ -428,5 +431,19 @@ export class ApiRepo extends MockRepo {
       ultimaLeitura: item.ultimaLeitura,
       ocorrenciaId: item.ocorrenciaId ? String(item.ocorrenciaId) : undefined,
     }));
+  }
+
+  override async meusNumeros() {
+    const base = await super.meusNumeros();
+    let concluidas = 0;
+    if (this.minhasDenuncias.size > 0) {
+      try {
+        const lista = await this.listarOcorrencias(BAIRRO);
+        concluidas = lista.filter((o) => this.minhasDenuncias.has(o.id) && o.status === 'CONCLUIDA').length;
+      } catch {
+        concluidas = 0;
+      }
+    }
+    return { denuncias: this.minhasDenuncias.size, concluidas, confirmacoes: base.confirmacoes };
   }
 }

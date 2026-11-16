@@ -2,6 +2,7 @@ import { Inter_400Regular, Inter_600SemiBold, Inter_700Bold, useFonts } from '@e
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { PreferenciasProvider } from '@/estado/PreferenciasContext';
 import { SessaoProvider, useSessao } from '@/estado/SessaoContext';
 
 SplashScreen.preventAutoHideAsync();
@@ -36,8 +37,10 @@ export default function RootLayout() {
   if (!fontesCarregadas) return null;
 
   return (
-    <SessaoProvider>
-      <Rotas />
-    </SessaoProvider>
+    <PreferenciasProvider>
+      <SessaoProvider>
+        <Rotas />
+      </SessaoProvider>
+    </PreferenciasProvider>
   );
 }
