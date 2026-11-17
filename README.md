@@ -56,8 +56,7 @@ Aplicativo do cidadão da solução **DrenaAi**, feito para a disciplina de **Mo
 
 ## Banco de dados
 
-**Banco escolhido: Oracle Database, acessado pela API em C# da equipe ([DrenaAi-API](https://github.com/GS-CitizenTech-DrenaAi/DrenaAi-API)).** A integração entre o app e o backend em C# foi aprovada pelo professor.
-
+**Banco escolhido: Oracle Database, acessado pela API em C# da equipe ([DrenaAi-API](https://github.com/GS-CitizenTech-DrenaAi/DrenaAi-API)).** 
 **Por que essa escolha:**
 - As denúncias precisam ser **compartilhadas entre todos os moradores** e com a equipe de coleta: a fila de um bairro é a mesma para todo mundo. Um banco só no celular não resolveria isso.
 - O cálculo do IPC e a reordenação da fila acontecem no backend, junto com os dados, então a regra é a mesma para todos.
