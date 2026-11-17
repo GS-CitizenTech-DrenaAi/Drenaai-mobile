@@ -1,6 +1,6 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Bell, ChevronRight, Lightbulb } from 'lucide-react-native';
+import { Bell, ChevronRight, Lightbulb, TriangleAlert } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { distanciaM } from '@/dados/geo';
@@ -11,6 +11,7 @@ import { rotuloStatus, rotuloTipo } from '@/dados/textos';
 import { Ocorrencia, Previsao } from '@/dados/tipos';
 import { usePreferencias } from '@/estado/PreferenciasContext';
 import { Aviso } from '@/ui/Aviso';
+import { Botao } from '@/ui/Botao';
 import { BotaoPerfil } from '@/ui/BotaoPerfil';
 import { CardAlerta } from '@/ui/CardAlerta';
 import { CardChuva } from '@/ui/CardChuva';
@@ -54,9 +55,8 @@ export default function Bairro() {
   const [ocorrencias, setOcorrencias] = useState<Ocorrencia[]>([]);
   const [atualizando, setAtualizando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [verAlerta, setVerAlerta] = useState<boolean | null>(null);
+  const [verAlerta, setVerAlerta] = useState(false);
   const { alertas } = usePreferencias();
-  const mostrarAlerta = verAlerta ?? alertas;
 
   async function carregar() {
     try {
@@ -82,7 +82,7 @@ export default function Bairro() {
   );
 
   function aoTocarSino() {
-    if (previsao?.alerta) setVerAlerta(!mostrarAlerta);
+    if (previsao?.alerta) setVerAlerta(!verAlerta);
     else Alert.alert('Sem alertas', 'Nenhuma chuva forte prevista para hoje.');
   }
 
@@ -98,7 +98,9 @@ export default function Bairro() {
     );
   }
 
-  const modoAlerta = previsao.alerta && mostrarAlerta;
+  const modoAlerta = previsao.alerta && verAlerta;
+  const mostrarFaixa = previsao.alerta && alertas && !verAlerta;
+  const janela = previsao.janela ?? { inicio: previsao.pico.hora, fim: previsao.pico.hora };
   const perto: Perto[] = ocorrencias
     .filter((o) => o.status !== 'CONCLUIDA' && (o.tipo === 'BUEIRO_ENTUPIDO' || o.tipo === 'ENTULHO'))
     .map((o) => ({
@@ -145,6 +147,31 @@ export default function Bairro() {
 
       {erro && <Aviso tipo="erro" titulo="Não foi possível atualizar" mensagem={erro} aoTentarDeNovo={atualizar} />}
 
+      {mostrarFaixa && (
+        <Entrada>
+          <Pressable
+            onPress={() => setVerAlerta(true)}
+            accessibilityRole="button"
+            accessibilityLabel={`Chuva forte prevista entre ${janela.inicio} e ${janela.fim} horas. Ver alerta`}
+            style={({ pressed }) => [styles.faixa, pressed && styles.faixaPressionada]}
+          >
+            <TriangleAlert size={22} color={cores.branco} strokeWidth={2.3} />
+            <View style={styles.flex}>
+              <Texto variante="destaque" cor={cores.branco}>
+                Chuva forte prevista
+              </Texto>
+              <Texto variante="pequeno" cor={cores.textoSobreAlerta}>
+                entre {janela.inicio}h e {janela.fim}h
+              </Texto>
+            </View>
+            <Texto variante="destaque" cor={cores.branco}>
+              Ver alerta
+            </Texto>
+            <ChevronRight size={20} color={cores.branco} strokeWidth={2} />
+          </Pressable>
+        </Entrada>
+      )}
+
       <Entrada key={modoAlerta ? 'alerta' : 'normal'}>
         {modoAlerta ? <CardAlerta previsao={previsao} /> : <CardChuva previsao={previsao} />}
       </Entrada>
@@ -166,6 +193,7 @@ export default function Bairro() {
               guarde o lixo em casa até a chuva passar. Sacos na calçada vão parar no bueiro.
             </Texto>
           </View>
+          <Botao titulo="Fechar alerta" variante="secundario" onPress={() => setVerAlerta(false)} />
         </>
       )}
 
@@ -232,6 +260,17 @@ const styles = StyleSheet.create({
     minWidth: 56,
     alignItems: 'center',
   },
+  faixa: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: espaco.md,
+    minHeight: ALVO_MIN + espaco.md,
+    paddingHorizontal: espaco.lg,
+    paddingVertical: espaco.md,
+    borderRadius: raio.lg,
+    backgroundColor: cores.alerta,
+  },
+  faixaPressionada: { backgroundColor: cores.vermelho.texto },
   dica: {
     flexDirection: 'row',
     gap: espaco.md,

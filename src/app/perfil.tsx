@@ -109,7 +109,7 @@ export default function Perfil() {
             <View style={styles.flex}>
               <Texto variante="destaque">Alertas de chuva</Texto>
               <Texto variante="pequeno" cor={cores.textoSec}>
-                {alertas ? 'O bairro entra em modo alerta com chuva forte' : 'Desligados'}
+                {alertas ? 'Mostra um aviso no bairro quando houver chuva forte' : 'Desligados'}
               </Texto>
             </View>
             <Switch
