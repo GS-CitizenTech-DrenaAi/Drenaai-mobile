@@ -1,7 +1,7 @@
 import { Eye, EyeOff } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, TextInputProps, View } from 'react-native';
-import { ALVO_MIN, cores, espaco } from './tema';
+import { ALVO_MIN, cores, espaco, familia, fonte } from './tema';
 import { Texto } from './Texto';
 
 type Props = TextInputProps & {
@@ -64,8 +64,8 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 56,
     paddingHorizontal: espaco.lg,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
+    fontSize: fonte.corpo,
+    fontFamily: familia.regular,
     color: cores.texto,
   },
   olho: { width: ALVO_MIN, height: ALVO_MIN, alignItems: 'center', justifyContent: 'center' },

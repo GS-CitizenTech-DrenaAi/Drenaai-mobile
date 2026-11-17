@@ -1,13 +1,13 @@
 import { StyleSheet, Text, TextProps, TextStyle } from 'react-native';
 import { usePreferencias } from '@/estado/PreferenciasContext';
-import { cores, fonte } from './tema';
+import { cores, familia, fonte } from './tema';
 
 const variantes = {
-  pequeno: { fontSize: fonte.pequeno, fontFamily: 'Inter_400Regular' },
-  corpo: { fontSize: fonte.corpo, fontFamily: 'Inter_400Regular' },
-  destaque: { fontSize: fonte.corpo, fontFamily: 'Inter_600SemiBold' },
-  titulo: { fontSize: fonte.titulo, fontFamily: 'Inter_700Bold' },
-  grande: { fontSize: fonte.grande, fontFamily: 'Inter_700Bold' },
+  pequeno: { fontSize: fonte.pequeno, fontFamily: familia.regular },
+  corpo: { fontSize: fonte.corpo, fontFamily: familia.regular },
+  destaque: { fontSize: fonte.corpo, fontFamily: familia.semiNegrito },
+  titulo: { fontSize: fonte.titulo, fontFamily: familia.negrito },
+  grande: { fontSize: fonte.grande, fontFamily: familia.negrito },
 };
 
 type Props = TextProps & {

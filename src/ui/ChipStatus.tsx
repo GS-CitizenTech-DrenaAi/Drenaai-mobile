@@ -2,7 +2,7 @@ import { BadgeCheck, CheckCheck, Clock, Inbox, LucideIcon, Truck } from 'lucide-
 import { StyleSheet, View } from 'react-native';
 import { rotuloStatus } from '@/dados/textos';
 import { Status } from '@/dados/tipos';
-import { cores, espaco, raio } from './tema';
+import { cores, espaco, familia, raio } from './tema';
 import { Texto } from './Texto';
 
 const azul = { fundo: cores.azulClaro, texto: cores.primaria };
@@ -34,10 +34,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: espaco.xs,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: espaco.s,
+    paddingHorizontal: espaco.ms,
     borderRadius: raio.pilula,
     alignSelf: 'flex-start',
   },
-  texto: { fontFamily: 'Inter_700Bold' },
+  texto: { fontFamily: familia.negrito },
 });

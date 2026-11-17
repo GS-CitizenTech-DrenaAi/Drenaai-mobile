@@ -7,12 +7,14 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 import MapView, { Marker } from 'react-native-maps';
 import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
 import { BAIRRO, CENTRO_BAIRRO } from '@/dados/mock/dadosMock';
+import { ErroDrena } from '@/dados/DrenaRepo';
 import { repo } from '@/dados/repo';
 import { formatarNumero, nivelPrioridade, rotuloTipo, tempoRelativo } from '@/dados/textos';
 import { Bueiro, Ocorrencia } from '@/dados/tipos';
+import { Aviso } from '@/ui/Aviso';
 import { BotaoPerfil } from '@/ui/BotaoPerfil';
 import { Texto } from '@/ui/Texto';
-import { ALVO_MIN, cores, espaco, raio } from '@/ui/tema';
+import { ALVO_MIN, cores, espaco, familia, fonte, raio } from '@/ui/tema';
 
 const COR_NIVEL = { alta: cores.vermelho.solido, media: cores.ambar.solido, baixa: cores.verde.solido };
 const TEXTO_NIVEL = { alta: 'alta', media: 'média', baixa: 'baixa' };
@@ -34,14 +36,22 @@ export default function Mapa() {
   const [busca, setBusca] = useState('');
   const [aberta, setAberta] = useState(false);
   const [sensor, setSensor] = useState<Bueiro | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      Promise.all([repo.fila(BAIRRO), repo.listarBueiros(BAIRRO)]).then(([f, b]) => {
+  function carregar() {
+    Promise.all([repo.fila(BAIRRO), repo.listarBueiros(BAIRRO)])
+      .then(([f, b]) => {
         setFila(f);
         setBueiros(b);
         setSensor((atual) => (atual ? b.find((item) => item.id === atual.id) ?? null : null));
-      });
+        setErro(null);
+      })
+      .catch((e) => setErro(e instanceof ErroDrena ? e.message : 'Verifique sua internet e tente de novo.'));
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      carregar();
     }, []),
   );
 
@@ -350,11 +360,24 @@ export default function Mapa() {
           )}
         </View>
       )}
+      {erro && (
+        <View style={styles.painelErro}>
+          <Aviso
+            tipo="erro"
+            titulo="Não foi possível carregar o mapa"
+            mensagem={erro}
+            aoTentarDeNovo={() => {
+              setErro(null);
+              carregar();
+            }}
+          />
+        </View>
+      )}
     </View>
   );
 }
 
-const sombra = { elevation: 4, shadowColor: '#0F1B2D', shadowOpacity: 0.12, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } };
+const sombra = { elevation: 4, shadowColor: cores.texto, shadowOpacity: 0.12, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } };
 
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cores.fundo },
@@ -362,7 +385,7 @@ const styles = StyleSheet.create({
   linha: { flexDirection: 'row', alignItems: 'center', gap: espaco.sm },
   linhaEntre: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: espaco.md },
   flex: { flex: 1 },
-  negrito: { fontFamily: 'Inter_700Bold' },
+  negrito: { fontFamily: familia.negrito },
   centralizado: { textAlign: 'center' },
   busca: {
     flex: 1,
@@ -375,13 +398,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     ...sombra,
   },
-  buscaTexto: { flex: 1, fontSize: 16, fontFamily: 'Inter_400Regular', color: cores.texto, minHeight: ALVO_MIN },
+  buscaTexto: { flex: 1, fontSize: fonte.corpo, fontFamily: familia.regular, color: cores.texto, minHeight: ALVO_MIN },
   limpar: { width: ALVO_MIN, height: ALVO_MIN, alignItems: 'center', justifyContent: 'center' },
-  filtro: { flex: 1, flexDirection: 'row', backgroundColor: cores.branco, borderRadius: raio.pilula, padding: 4, ...sombra },
+  filtro: { flex: 1, flexDirection: 'row', backgroundColor: cores.branco, borderRadius: raio.pilula, padding: espaco.xs, ...sombra },
   opcao: {
     flex: 1,
     flexDirection: 'row',
-    gap: 6,
+    gap: espaco.s,
     minHeight: 40,
     borderRadius: raio.pilula,
     alignItems: 'center',
@@ -403,11 +426,11 @@ const styles = StyleSheet.create({
     gap: espaco.md,
     backgroundColor: cores.branco,
     borderRadius: raio.pilula,
-    paddingVertical: 6,
+    paddingVertical: espaco.s,
     paddingHorizontal: espaco.md,
     ...sombra,
   },
-  itemLegenda: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  itemLegenda: { flexDirection: 'row', alignItems: 'center', gap: espaco.s },
   ponto: { width: 12, height: 12, borderRadius: 6 },
   pino: {
     width: 36,
@@ -421,12 +444,12 @@ const styles = StyleSheet.create({
   sensor: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: espaco.xs,
     backgroundColor: cores.branco,
     borderWidth: 2.5,
     borderRadius: raio.pilula,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingVertical: espaco.xs,
+    paddingHorizontal: espaco.sm,
   },
   sensorSelecionado: { transform: [{ scale: 1.15 }] },
   gaveta: {
@@ -455,11 +478,11 @@ const styles = StyleSheet.create({
   },
   numero: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   vazio: { paddingVertical: espaco.lg, textAlign: 'center' },
-  estado: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: raio.pilula },
+  estado: { paddingVertical: espaco.s, paddingHorizontal: espaco.md, borderRadius: raio.pilula },
   trilho: { height: 12, borderRadius: 6, backgroundColor: cores.fundo, overflow: 'hidden' },
   preenchido: { height: '100%', borderRadius: 6 },
-  dado: { flex: 1, gap: 2 },
-  link: { flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: ALVO_MIN },
+  dado: { flex: 1, gap: espaco.xxs },
+  link: { flexDirection: 'row', alignItems: 'center', gap: espaco.xs, minHeight: ALVO_MIN },
   dicaSensor: {
     position: 'absolute',
     left: espaco.lg,
@@ -472,15 +495,16 @@ const styles = StyleSheet.create({
     ...sombra,
   },
   listaSensores: { maxHeight: 92 },
+  painelErro: { position: 'absolute', left: espaco.lg, right: espaco.lg, bottom: espaco.lg },
   chipsSensor: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: espaco.sm },
   chipSensor: {
     width: '48.5%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 6,
+    gap: espaco.s,
     minHeight: 40,
-    paddingHorizontal: 10,
+    paddingHorizontal: espaco.ms,
     borderRadius: raio.pilula,
   },
 });

@@ -5,19 +5,21 @@ import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
-import { ErroDrena } from '@/dados/DrenaRepo';
+import { ErroConexao, ErroDrena } from '@/dados/DrenaRepo';
+import { modoDados, usarDemonstracao } from '@/dados/repo';
 import { useSessao } from '@/estado/SessaoContext';
 import { Botao } from '@/ui/Botao';
 import { Campo } from '@/ui/Campo';
 import { Entrada } from '@/ui/Entrada';
 import { Texto } from '@/ui/Texto';
-import { ALVO_MIN, cores, espaco } from '@/ui/tema';
+import { ALVO_MIN, cores, espaco, fonte } from '@/ui/tema';
 
 export default function Login() {
   const router = useRouter();
   const { entrar } = useSessao();
-  const [email, setEmail] = useState('ana@teste.com');
-  const [senha, setSenha] = useState('senha123');
+  const demonstracao = modoDados() === 'mock';
+  const [email, setEmail] = useState(demonstracao ? 'ana@teste.com' : '');
+  const [senha, setSenha] = useState(demonstracao ? 'senha123' : '');
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -27,10 +29,28 @@ export default function Login() {
     try {
       await entrar(email, senha);
     } catch (e) {
-      setErro(e instanceof ErroDrena ? e.message : 'Algo deu errado. Tente de novo.');
+      if (e instanceof ErroConexao) oferecerDemonstracao();
+      else setErro(e instanceof ErroDrena ? e.message : 'Algo deu errado. Tente de novo.');
     } finally {
       setEnviando(false);
     }
+  }
+
+  function oferecerDemonstracao() {
+    Alert.alert(
+      'Servidor fora do ar',
+      'Não conseguimos falar com o servidor do DrenaAi. Você pode tentar de novo mais tarde ou ver o app com dados de demonstração.',
+      [
+        { text: 'Tentar de novo', style: 'cancel' },
+        {
+          text: 'Usar demonstração',
+          onPress: () => {
+            usarDemonstracao();
+            entrar('ana@teste.com', 'senha123');
+          },
+        },
+      ],
+    );
   }
 
   return (
@@ -44,7 +64,7 @@ export default function Login() {
           <Texto variante="grande" cor={cores.branco} style={styles.marca}>
             DrenaAi
           </Texto>
-          <Texto cor="#D6E6F5" style={styles.slogan}>
+          <Texto cor={cores.textoSobreAzul} style={styles.slogan}>
             Menos lixo no bueiro, menos alagamento no seu bairro.
           </Texto>
           <Svg viewBox="0 0 430 60" preserveAspectRatio="none" style={styles.onda}>
@@ -108,8 +128,8 @@ const styles = StyleSheet.create({
   topo: {
     backgroundColor: cores.primaria,
     alignItems: 'center',
-    paddingTop: 72,
-    paddingBottom: 72,
+    paddingTop: espaco.topoAlto,
+    paddingBottom: espaco.topoAlto,
     paddingHorizontal: espaco.xxl,
   },
   logo: {
@@ -121,7 +141,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: espaco.lg,
   },
-  marca: { fontSize: 36 },
+  marca: { fontSize: fonte.marca },
   slogan: { textAlign: 'center', marginTop: espaco.sm, maxWidth: 300 },
   onda: { position: 'absolute', left: 0, right: 0, bottom: -1, height: 60 },
   form: { flex: 1, padding: espaco.xxl, paddingTop: espaco.md, gap: espaco.lg },

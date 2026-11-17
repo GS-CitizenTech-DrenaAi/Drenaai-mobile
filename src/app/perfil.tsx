@@ -1,11 +1,10 @@
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Bell, ChevronDown, ChevronUp, LogOut, MapPin, ShieldCheck, Type, X } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
 import { BAIRRO } from '@/dados/mock/dadosMock';
-import { repo } from '@/dados/repo';
 import { iniciais } from '@/dados/textos';
 import { TamanhoTexto, usePreferencias } from '@/estado/PreferenciasContext';
 import { useSessao } from '@/estado/SessaoContext';
@@ -23,12 +22,7 @@ export default function Perfil() {
   const router = useRouter();
   const { usuario, sair } = useSessao();
   const { tamanhoTexto, mudarTamanho, alertas, mudarAlertas } = usePreferencias();
-  const [numeros, setNumeros] = useState({ denuncias: 0, concluidas: 0, confirmacoes: 0 });
   const [verPrivacidade, setVerPrivacidade] = useState(false);
-
-  useEffect(() => {
-    repo.meusNumeros().then(setNumeros).catch(() => {});
-  }, []);
 
   function confirmarSaida() {
     Alert.alert('Sair da conta?', 'Você vai precisar entrar de novo para fazer denúncias.', [
@@ -36,12 +30,6 @@ export default function Perfil() {
       { text: 'Sair', style: 'destructive', onPress: sair },
     ]);
   }
-
-  const contadores = [
-    { valor: numeros.denuncias, rotulo: 'Denúncias' },
-    { valor: numeros.concluidas, rotulo: 'Resolvidas' },
-    { valor: numeros.confirmacoes, rotulo: 'Confirmações' },
-  ];
 
   return (
     <View style={styles.tela}>
@@ -68,22 +56,7 @@ export default function Perfil() {
           <Texto cor={cores.textoSec}>{usuario?.email}</Texto>
         </View>
 
-        <View style={styles.contadores}>
-          {contadores.map((c, i) => (
-            <Entrada key={c.rotulo} ordem={i} style={styles.contador}>
-              <View accessible accessibilityLabel={`${c.valor} ${c.rotulo}`} style={styles.centro}>
-                <Texto variante="grande" cor={cores.primaria}>
-                  {c.valor}
-                </Texto>
-                <Texto variante="pequeno" cor={cores.textoSec}>
-                  {c.rotulo}
-                </Texto>
-              </View>
-            </Entrada>
-          ))}
-        </View>
-
-        <Entrada ordem={3} style={styles.cartao}>
+        <Entrada ordem={0} style={styles.cartao}>
           <View style={styles.item}>
             <View style={styles.icone}>
               <MapPin size={20} color={cores.primaria} strokeWidth={1.9} />
@@ -179,7 +152,7 @@ export default function Perfil() {
           )}
         </Entrada>
 
-        <Entrada ordem={4}>
+        <Entrada ordem={1}>
           <Pressable onPress={confirmarSaida} accessibilityRole="button" style={styles.sair}>
             <LogOut size={20} color={cores.vermelho.texto} strokeWidth={1.9} />
             <Texto variante="destaque" cor={cores.vermelho.texto}>
@@ -216,16 +189,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: espaco.sm,
   },
-  contadores: { flexDirection: 'row', gap: espaco.sm },
-  contador: {
-    flex: 1,
-    backgroundColor: cores.branco,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: cores.borda,
-    paddingVertical: espaco.lg,
-  },
-  centro: { alignItems: 'center' },
   cartao: {
     backgroundColor: cores.branco,
     borderRadius: 20,

@@ -188,14 +188,4 @@ export class MockRepo implements DrenaRepo {
     void bairro;
     return BUEIROS;
   }
-
-  async meusNumeros() {
-    await esperar(200);
-    const minhas = this.ocorrencias.filter((o) => o.usuarioId === this.usuarioAtual?.id);
-    return {
-      denuncias: minhas.length,
-      concluidas: minhas.filter((o) => o.status === 'CONCLUIDA').length,
-      confirmacoes: this.confirmadas.size,
-    };
-  }
 }

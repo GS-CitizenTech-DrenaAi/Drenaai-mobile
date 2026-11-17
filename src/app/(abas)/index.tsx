@@ -5,17 +5,19 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { distanciaM } from '@/dados/geo';
 import { BAIRRO, PONTO_GRAVACAO } from '@/dados/mock/dadosMock';
-import { repo } from '@/dados/repo';
+import { ErroDrena } from '@/dados/DrenaRepo';
+import { modoDados, repo } from '@/dados/repo';
 import { rotuloStatus, rotuloTipo } from '@/dados/textos';
 import { Ocorrencia, Previsao } from '@/dados/tipos';
 import { usePreferencias } from '@/estado/PreferenciasContext';
+import { Aviso } from '@/ui/Aviso';
 import { BotaoPerfil } from '@/ui/BotaoPerfil';
 import { CardAlerta } from '@/ui/CardAlerta';
 import { CardChuva } from '@/ui/CardChuva';
 import { Entrada } from '@/ui/Entrada';
 import { ItemOcorrencia } from '@/ui/ItemOcorrencia';
 import { Texto } from '@/ui/Texto';
-import { ALVO_MIN, cores, espaco, raio } from '@/ui/tema';
+import { ALVO_MIN, cores, espaco, familia, raio } from '@/ui/tema';
 
 type Perto = { ocorrencia: Ocorrencia; distancia: number };
 
@@ -51,14 +53,20 @@ export default function Bairro() {
   const [previsao, setPrevisao] = useState<Previsao | null>(null);
   const [ocorrencias, setOcorrencias] = useState<Ocorrencia[]>([]);
   const [atualizando, setAtualizando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
   const [verAlerta, setVerAlerta] = useState<boolean | null>(null);
   const { alertas } = usePreferencias();
   const mostrarAlerta = verAlerta ?? alertas;
 
   async function carregar() {
-    const [p, lista] = await Promise.all([repo.previsao(BAIRRO), repo.listarOcorrencias(BAIRRO)]);
-    setPrevisao(p);
-    setOcorrencias(lista);
+    try {
+      const [p, lista] = await Promise.all([repo.previsao(BAIRRO), repo.listarOcorrencias(BAIRRO)]);
+      setPrevisao(p);
+      setOcorrencias(lista);
+      setErro(null);
+    } catch (e) {
+      setErro(e instanceof ErroDrena ? e.message : 'Verifique sua internet e tente de novo.');
+    }
   }
 
   async function atualizar() {
@@ -80,8 +88,12 @@ export default function Bairro() {
 
   if (!previsao) {
     return (
-      <View style={[styles.tela, styles.centro]}>
-        <ActivityIndicator size="large" color={cores.primaria} />
+      <View style={[styles.tela, styles.centro, styles.margem]}>
+        {erro ? (
+          <Aviso tipo="erro" titulo="Não foi possível carregar o bairro" mensagem={erro} aoTentarDeNovo={atualizar} />
+        ) : (
+          <ActivityIndicator size="large" color={cores.primaria} accessibilityLabel="Carregando o bairro" />
+        )}
       </View>
     );
   }
@@ -112,6 +124,11 @@ export default function Bairro() {
           <Texto variante="grande" accessibilityRole="header">
             {BAIRRO}
           </Texto>
+          {modoDados() === 'mock' && (
+            <Texto variante="pequeno" cor={cores.textoSec}>
+              Dados de demonstração
+            </Texto>
+          )}
         </View>
         <Pressable
           onPress={aoTocarSino}
@@ -125,6 +142,8 @@ export default function Bairro() {
         </Pressable>
         <BotaoPerfil />
       </View>
+
+      {erro && <Aviso tipo="erro" titulo="Não foi possível atualizar" mensagem={erro} aoTentarDeNovo={atualizar} />}
 
       <Entrada key={modoAlerta ? 'alerta' : 'normal'}>
         {modoAlerta ? <CardAlerta previsao={previsao} /> : <CardChuva previsao={previsao} />}
@@ -153,6 +172,9 @@ export default function Bairro() {
       <Texto variante="titulo" accessibilityRole="header">
         Denúncias no bairro
       </Texto>
+      {ocorrencias.length === 0 && (
+        <Aviso tipo="vazio" titulo="Nenhuma denúncia no bairro ainda" mensagem="Viu lixo perto de um bueiro? Toque no + para fazer a primeira." />
+      )}
       {ocorrencias.map((o, i) => (
         <Entrada key={o.id} ordem={i + 2}>
           <ItemOcorrencia ocorrencia={o} />
@@ -165,10 +187,11 @@ export default function Bairro() {
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cores.fundo },
   centro: { alignItems: 'center', justifyContent: 'center' },
-  conteudo: { padding: espaco.xl, paddingTop: 56, gap: espaco.md },
+  margem: { padding: espaco.xl },
+  conteudo: { padding: espaco.xl, paddingTop: espaco.topo, gap: espaco.md },
   topo: { flexDirection: 'row', alignItems: 'center', gap: espaco.sm, marginBottom: espaco.sm },
   flex: { flex: 1 },
-  negrito: { fontFamily: 'Inter_700Bold' },
+  negrito: { fontFamily: familia.negrito },
   sino: {
     width: ALVO_MIN,
     height: ALVO_MIN,

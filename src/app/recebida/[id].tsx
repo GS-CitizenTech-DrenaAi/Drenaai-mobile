@@ -5,13 +5,15 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming, ZoomIn } from 'react-native-reanimated';
 import { BAIRRO } from '@/dados/mock/dadosMock';
+import { ErroDrena } from '@/dados/DrenaRepo';
 import { repo } from '@/dados/repo';
 import { faixaSeveridade, formatarNumero, rotuloTipo } from '@/dados/textos';
 import { Ocorrencia } from '@/dados/tipos';
 import { Botao } from '@/ui/Botao';
+import { Aviso } from '@/ui/Aviso';
 import { Entrada } from '@/ui/Entrada';
 import { Texto } from '@/ui/Texto';
-import { cores, espaco, raio } from '@/ui/tema';
+import { alturaLinha, cores, espaco, familia, fonte, raio } from '@/ui/tema';
 
 const FAIXAS = ['Baixa', 'Média', 'Alta', 'Crítica'] as const;
 const COR_FAIXA = { Baixa: cores.verde.solido, Média: cores.ambar.texto, Alta: cores.vermelho.solido, Crítica: cores.alerta };
@@ -45,17 +47,34 @@ export default function Recebida() {
   const [ocorrencia, setOcorrencia] = useState<Ocorrencia | null>(null);
   const [chuva12h, setChuva12h] = useState(0);
 
+  const [erro, setErro] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
+
   useEffect(() => {
-    Promise.all([repo.obterOcorrencia(id), repo.previsao(BAIRRO)]).then(([o, p]) => {
-      setOcorrencia(o);
-      setChuva12h(p.chuvaMm12h);
-    });
-  }, [id]);
+    Promise.all([repo.obterOcorrencia(id), repo.previsao(BAIRRO)])
+      .then(([o, p]) => {
+        setOcorrencia(o);
+        setChuva12h(p.chuvaMm12h);
+      })
+      .catch((e) => setErro(e instanceof ErroDrena ? e.message : 'Verifique sua internet e tente de novo.'));
+  }, [id, tentativa]);
+
+  function tentarDeNovo() {
+    setErro(null);
+    setTentativa((t) => t + 1);
+  }
 
   if (!ocorrencia) {
     return (
-      <View style={[styles.tela, styles.centro]}>
-        <ActivityIndicator size="large" color={cores.primaria} />
+      <View style={[styles.tela, styles.centro, styles.margem]}>
+        {erro ? (
+          <View style={styles.erro}>
+            <Aviso tipo="erro" titulo="Não foi possível abrir a denúncia" mensagem={erro} aoTentarDeNovo={tentarDeNovo} />
+            <Botao titulo="Voltar" variante="secundario" onPress={() => router.back()} />
+          </View>
+        ) : (
+          <ActivityIndicator size="large" color={cores.primaria} accessibilityLabel="Carregando a denúncia" />
+        )}
       </View>
     );
   }
@@ -136,7 +155,7 @@ export default function Recebida() {
               {ocorrencia.posicaoFila}º
             </Texto>
           </Animated.View>
-          <Texto cor="#D6E6F5" style={styles.flex}>
+          <Texto cor={cores.textoSobreAzul} style={styles.flex}>
             na fila de coleta do bairro.{' '}
             {chuva12h >= 25 ? 'Chuva forte prevista e rua que costuma alagar.' : 'A fila muda conforme a chuva prevista.'}
           </Texto>
@@ -154,7 +173,9 @@ export default function Recebida() {
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cores.fundo },
   centro: { alignItems: 'center', justifyContent: 'center' },
-  conteudo: { padding: espaco.xl, paddingTop: 64, gap: espaco.lg },
+  margem: { padding: espaco.xl },
+  erro: { alignSelf: 'stretch', gap: espaco.md },
+  conteudo: { padding: espaco.xl, paddingTop: espaco.topo, gap: espaco.lg },
   cabeca: { alignItems: 'center', gap: espaco.sm },
   check: {
     width: 72,
@@ -175,7 +196,7 @@ const styles = StyleSheet.create({
   },
   linha: { flexDirection: 'row', alignItems: 'center', gap: espaco.sm },
   linhaEntre: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: espaco.sm, flexWrap: 'wrap' },
-  escala: { flexDirection: 'row', gap: 4 },
+  escala: { flexDirection: 'row', gap: espaco.xs },
   faixa: {
     flex: 1,
     minHeight: 40,
@@ -183,15 +204,15 @@ const styles = StyleSheet.create({
     backgroundColor: cores.fundo,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 2,
+    paddingHorizontal: espaco.xxs,
   },
-  negrito: { fontFamily: 'Inter_700Bold' },
+  negrito: { fontFamily: familia.negrito },
   citacao: { fontStyle: 'italic' },
   parcela: { flexDirection: 'row', alignItems: 'center', gap: espaco.sm },
   parcelaRotulo: { width: 96 },
   trilho: { flex: 1, height: 10, borderRadius: 5, backgroundColor: cores.azulClaro, overflow: 'hidden' },
   preenchido: { height: '100%', borderRadius: 5, backgroundColor: cores.primaria },
-  parcelaValor: { width: 52, textAlign: 'right', fontFamily: 'Inter_700Bold' },
+  parcelaValor: { width: 52, textAlign: 'right', fontFamily: familia.negrito },
   posicao: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -200,7 +221,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: espaco.lg,
   },
-  numero: { fontSize: 44, lineHeight: 52, fontFamily: 'Inter_700Bold' },
+  numero: { fontSize: fonte.numero, lineHeight: alturaLinha.numero, fontFamily: familia.negrito },
   flex: { flex: 1 },
   botoes: { gap: espaco.sm, marginTop: espaco.sm },
 });

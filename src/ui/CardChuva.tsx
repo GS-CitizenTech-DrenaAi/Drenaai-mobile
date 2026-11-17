@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { Previsao } from '@/dados/tipos';
-import { cores, espaco, raio } from './tema';
+import { alturaLinha, cores, espaco, familia, fonte, raio } from './tema';
 import { Texto } from './Texto';
 
 const TEXTO_RISCO = { ALTO: 'Risco alto de alagamento', MEDIO: 'Risco médio de alagamento', BAIXO: 'Risco baixo de alagamento' };
@@ -30,8 +30,8 @@ export function CardChuva({ previsao }: { previsao: Previsao }) {
     <View style={styles.card} accessible accessibilityLabel={resumo}>
       <View style={styles.bolha} />
       <View style={styles.linha}>
-        <CloudRain size={20} color="#D6E6F5" strokeWidth={1.9} />
-        <Texto variante="pequeno" cor="#D6E6F5">
+        <CloudRain size={20} color={cores.textoSobreAzul} strokeWidth={1.9} />
+        <Texto variante="pequeno" cor={cores.textoSobreAzul}>
           Chuva prevista · próximas 24h
         </Texto>
       </View>
@@ -55,7 +55,7 @@ export function CardChuva({ previsao }: { previsao: Previsao }) {
             {TEXTO_RISCO[previsao.risco]}
           </Texto>
         </View>
-        <Texto variante="pequeno" cor="#D6E6F5">
+        <Texto variante="pequeno" cor={cores.textoSobreAzul}>
           Pico às {previsao.pico.hora}h
         </Texto>
       </View>
@@ -78,22 +78,22 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: cores.transparente.bolha,
   },
   linha: { flexDirection: 'row', alignItems: 'center', gap: espaco.sm },
   meio: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  mm: { fontSize: 48, fontFamily: 'Inter_700Bold', lineHeight: 52 },
-  barras: { flexDirection: 'row', alignItems: 'flex-end', gap: 5, height: 48 },
-  barra: { width: 10, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.85)' },
+  mm: { fontSize: fonte.enorme, fontFamily: familia.negrito, lineHeight: alturaLinha.numero },
+  barras: { flexDirection: 'row', alignItems: 'flex-end', gap: espaco.xs, height: 48 },
+  barra: { width: 10, borderRadius: 4, backgroundColor: cores.transparente.barra },
   rodape: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: espaco.sm },
   risco: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: espaco.s,
     backgroundColor: cores.branco,
-    paddingVertical: 7,
-    paddingHorizontal: 12,
+    paddingVertical: espaco.s,
+    paddingHorizontal: espaco.md,
     borderRadius: raio.pilula,
   },
-  negrito: { fontFamily: 'Inter_700Bold' },
+  negrito: { fontFamily: familia.negrito },
 });

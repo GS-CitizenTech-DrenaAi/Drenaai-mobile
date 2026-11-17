@@ -4,7 +4,7 @@ import { Check, ChevronLeft, ShieldCheck } from 'lucide-react-native';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { ErroDrena } from '@/dados/DrenaRepo';
+import { ErroConexao, ErroDrena } from '@/dados/DrenaRepo';
 import { useSessao } from '@/estado/SessaoContext';
 import { Botao } from '@/ui/Botao';
 import { Campo } from '@/ui/Campo';
@@ -28,7 +28,8 @@ export default function Cadastro() {
     try {
       await criarConta(nome, email, senha);
     } catch (e) {
-      setErro(e instanceof ErroDrena ? e.message : 'Algo deu errado. Tente de novo.');
+      if (e instanceof ErroConexao) setErro('Servidor fora do ar. Volte e entre com os dados de demonstração.');
+      else setErro(e instanceof ErroDrena ? e.message : 'Algo deu errado. Tente de novo.');
     } finally {
       setEnviando(false);
     }
@@ -122,7 +123,7 @@ export default function Cadastro() {
 
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cores.fundo },
-  conteudo: { padding: espaco.xxl, paddingTop: 56, gap: espaco.lg },
+  conteudo: { padding: espaco.xxl, paddingTop: espaco.topo, gap: espaco.lg },
   voltar: {
     width: ALVO_MIN,
     height: ALVO_MIN,
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
     borderColor: cores.bordaCampo,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 2,
+    marginTop: espaco.xxs,
   },
   caixinhaMarcada: { backgroundColor: cores.primaria, borderColor: cores.primaria },
   aceiteTexto: { flex: 1 },

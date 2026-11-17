@@ -15,7 +15,8 @@ export interface DrenaRepo {
 
   previsao(bairro: string): Promise<Previsao>;
   listarBueiros(bairro?: string): Promise<Bueiro[]>;
-  meusNumeros(): Promise<{ denuncias: number; concluidas: number; confirmacoes: number }>;
 }
 
-export class ErroDrena extends Error {} 
+export class ErroDrena extends Error {}
+
+export class ErroConexao extends ErroDrena {}

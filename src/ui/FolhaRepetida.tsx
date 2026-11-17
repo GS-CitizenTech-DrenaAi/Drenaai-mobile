@@ -66,7 +66,7 @@ export function FolhaRepetida({ ocorrencia, distancia, ocupado, aoConfirmar, aoE
 }
 
 const styles = StyleSheet.create({
-  fundo: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(15,27,45,0.55)' },
+  fundo: { ...StyleSheet.absoluteFill, backgroundColor: cores.transparente.fundoModal },
   folha: {
     position: 'absolute',
     left: 0,
@@ -99,6 +99,6 @@ const styles = StyleSheet.create({
   },
   foto: { width: 64, height: 64, borderRadius: 12 },
   semFoto: { backgroundColor: cores.azulClaro, alignItems: 'center', justifyContent: 'center' },
-  flex: { flex: 1, gap: 2 },
-  linha: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  flex: { flex: 1, gap: espaco.xxs },
+  linha: { flexDirection: 'row', alignItems: 'center', gap: espaco.xs, marginTop: espaco.xxs },
 });

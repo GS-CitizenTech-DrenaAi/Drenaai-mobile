@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router/js-tabs';
 import { House, Map } from 'lucide-react-native';
 import { BotaoDenunciar } from '@/ui/BotaoDenunciar';
 import { IconeAba } from '@/ui/IconeAba';
-import { cores } from '@/ui/tema';
+import { cores, espaco, familia, fonte } from '@/ui/tema';
 
 export default function LayoutAbas() {
   return (
@@ -11,8 +11,8 @@ export default function LayoutAbas() {
         headerShown: false,
         tabBarActiveTintColor: cores.primaria,
         tabBarInactiveTintColor: cores.textoSec,
-        tabBarLabelStyle: { fontFamily: 'Inter_700Bold', fontSize: 13 },
-        tabBarStyle: { borderTopColor: cores.borda, paddingTop: 6, minHeight: 64 },
+        tabBarLabelStyle: { fontFamily: familia.negrito, fontSize: fonte.pequeno },
+        tabBarStyle: { borderTopColor: cores.borda, paddingTop: espaco.s, minHeight: 64 },
       }}
     >
       <Tabs.Screen

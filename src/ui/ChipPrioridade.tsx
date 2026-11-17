@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowUp, Minus, LucideIcon } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 import { formatarNumero, nivelPrioridade } from '@/dados/textos';
-import { cores, espaco, raio } from './tema';
+import { cores, espaco, familia, raio } from './tema';
 import { Texto } from './Texto';
 
 const ESTILO: Record<'alta' | 'media' | 'baixa', { icone: LucideIcon; cor: { fundo: string; texto: string }; texto: string }> = {
@@ -29,10 +29,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: espaco.xs,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: espaco.s,
+    paddingHorizontal: espaco.ms,
     borderRadius: raio.pilula,
     alignSelf: 'flex-start',
   },
-  texto: { fontFamily: 'Inter_700Bold' },
+  texto: { fontFamily: familia.negrito },
 });

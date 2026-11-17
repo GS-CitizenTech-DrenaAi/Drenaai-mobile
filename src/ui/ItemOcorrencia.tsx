@@ -50,5 +50,5 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   pressionado: { backgroundColor: cores.azulClaro },
-  textos: { flex: 1, gap: 3 },
+  textos: { flex: 1, gap: espaco.xxs },
 });

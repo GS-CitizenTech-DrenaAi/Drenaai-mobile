@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { Previsao } from '@/dados/tipos';
-import { cores, espaco, raio } from './tema';
+import { alturaLinha, cores, espaco, familia, fonte, raio } from './tema';
 import { Texto } from './Texto';
 
 function minutosAteChuva(inicio: number, fim: number, agora: Date) {
@@ -49,7 +49,7 @@ export function CardAlerta({ previsao }: { previsao: Previsao }) {
       <Texto cor={cores.branco} style={styles.mm}>
         {previsao.chuvaMm24h} mm
       </Texto>
-      <Texto cor="#FDE2E1">
+      <Texto cor={cores.textoSobreAlerta}>
         previstos entre {janela.inicio}h e {janela.fim}h
       </Texto>
 
@@ -63,13 +63,13 @@ export function CardAlerta({ previsao }: { previsao: Previsao }) {
         <View style={styles.contagem}>
           <View style={styles.caixa}>
             <Texto variante="titulo" cor={cores.branco}>{horas}</Texto>
-            <Texto variante="pequeno" cor="#FDE2E1">horas</Texto>
+            <Texto variante="pequeno" cor={cores.textoSobreAlerta}>horas</Texto>
           </View>
           <View style={styles.caixa}>
             <Texto variante="titulo" cor={cores.branco}>{minutos}</Texto>
-            <Texto variante="pequeno" cor="#FDE2E1">min</Texto>
+            <Texto variante="pequeno" cor={cores.textoSobreAlerta}>min</Texto>
           </View>
-          <Texto variante="pequeno" cor="#FDE2E1" style={styles.ate}>
+          <Texto variante="pequeno" cor={cores.textoSobreAlerta} style={styles.ate}>
             até começar a chuva
           </Texto>
         </View>
@@ -81,10 +81,10 @@ export function CardAlerta({ previsao }: { previsao: Previsao }) {
 const styles = StyleSheet.create({
   card: { backgroundColor: cores.alerta, borderRadius: 22, padding: espaco.xl, gap: espaco.xs },
   linha: { flexDirection: 'row', alignItems: 'center', gap: espaco.sm },
-  mm: { fontSize: 48, fontFamily: 'Inter_700Bold', lineHeight: 56, marginTop: espaco.sm },
+  mm: { fontSize: fonte.enorme, fontFamily: familia.negrito, lineHeight: alturaLinha.enorme, marginTop: espaco.sm },
   contagem: { flexDirection: 'row', alignItems: 'center', gap: espaco.sm, marginTop: espaco.md },
   caixa: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: cores.transparente.caixa,
     borderRadius: raio.md,
     paddingVertical: espaco.sm,
     paddingHorizontal: espaco.md,

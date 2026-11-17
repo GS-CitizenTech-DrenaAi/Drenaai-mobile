@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import { ErroDrena } from './DrenaRepo';
+import { ErroConexao, ErroDrena } from './DrenaRepo';
 import { BAIRRO } from './mock/dadosMock';
 import { MockRepo } from './mock/MockRepo';
 import { Bueiro, NovaOcorrencia, Ocorrencia, Status, Tipo, Usuario } from './tipos';
@@ -116,7 +116,6 @@ function normalizarHistorico(
 export class ApiRepo extends MockRepo {
   private token: string | null = null;
   private usuarioLogadoId: string | null = null;
-  private minhasDenuncias = new Set<string>();
 
   getToken(): string | null {
     return this.token;
@@ -152,7 +151,7 @@ export class ApiRepo extends MockRepo {
         body: JSON.stringify({ email: emailLimpo, senha }),
       });
     } catch {
-      throw new ErroDrena('Não foi possível conectar à API DrenaAi. Verifique se o backend está rodando.');
+      throw new ErroConexao('Não foi possível conectar à API DrenaAi. Verifique se o backend está rodando.');
     }
 
     const corpo = (await resposta.json().catch(() => null)) as
@@ -193,7 +192,7 @@ export class ApiRepo extends MockRepo {
         body: JSON.stringify({ nome: nomeLimpo, email: emailLimpo, senha }),
       });
     } catch {
-      throw new ErroDrena('Não foi possível conectar à API DrenaAi. Verifique se o backend está rodando.');
+      throw new ErroConexao('Não foi possível conectar à API DrenaAi. Verifique se o backend está rodando.');
     }
 
     const corpo = (await resposta.json().catch(() => null)) as ErroPayloadApi | null;
@@ -207,7 +206,6 @@ export class ApiRepo extends MockRepo {
   override async sair(): Promise<void> {
     this.token = null;
     this.usuarioLogadoId = null;
-    this.minhasDenuncias.clear();
     await super.sair();
   }
 
@@ -239,7 +237,7 @@ export class ApiRepo extends MockRepo {
         }),
       });
     } catch {
-      throw new ErroDrena('Não foi possível conectar ao servidor DrenaAi. Verifique se a API foi reiniciada.');
+      throw new ErroConexao('Não foi possível conectar ao servidor DrenaAi. Verifique se a API foi reiniciada.');
     }
 
     const corpo = (await resposta.json().catch(() => null)) as
@@ -268,7 +266,6 @@ export class ApiRepo extends MockRepo {
     }
 
     const criadaEm = corpo.criadaEm ?? new Date().toISOString();
-    this.minhasDenuncias.add(String(corpo.id));
     return {
       id: String(corpo.id),
       tipo: nova.tipo,
@@ -327,7 +324,7 @@ export class ApiRepo extends MockRepo {
         headers: this.headersAutenticados(false),
       });
     } catch {
-      throw new ErroDrena('Não foi possível conectar ao servidor DrenaAi para carregar o bairro.');
+      throw new ErroConexao('Não foi possível conectar ao servidor DrenaAi para carregar o bairro.');
     }
 
     if (resposta.status === 401) {
@@ -356,7 +353,7 @@ export class ApiRepo extends MockRepo {
         headers: this.headersAutenticados(false),
       });
     } catch {
-      throw new ErroDrena('Não foi possível conectar ao servidor DrenaAi para carregar a fila do mapa.');
+      throw new ErroConexao('Não foi possível conectar ao servidor DrenaAi para carregar a fila do mapa.');
     }
 
     const corpo = (await resposta.json().catch(() => null)) as
@@ -384,7 +381,7 @@ export class ApiRepo extends MockRepo {
         headers: this.headersAutenticados(false),
       });
     } catch {
-      throw new ErroDrena('Não foi possível consultar os detalhes da denúncia no servidor.');
+      throw new ErroConexao('Não foi possível consultar os detalhes da denúncia no servidor.');
     }
 
     const corpo = (await resposta.json().catch(() => null)) as (ErroPayloadApi & OcorrenciaDetalheApi) | null;
@@ -404,7 +401,7 @@ export class ApiRepo extends MockRepo {
         headers: this.headersAutenticados(false),
       });
     } catch {
-      throw new ErroDrena('Não foi possível conectar ao servidor DrenaAi para carregar os sensores.');
+      throw new ErroConexao('Não foi possível conectar ao servidor DrenaAi para carregar os sensores.');
     }
 
     const corpo = (await resposta.json().catch(() => null)) as
@@ -431,19 +428,5 @@ export class ApiRepo extends MockRepo {
       ultimaLeitura: item.ultimaLeitura,
       ocorrenciaId: item.ocorrenciaId ? String(item.ocorrenciaId) : undefined,
     }));
-  }
-
-  override async meusNumeros() {
-    const base = await super.meusNumeros();
-    let concluidas = 0;
-    if (this.minhasDenuncias.size > 0) {
-      try {
-        const lista = await this.listarOcorrencias(BAIRRO);
-        concluidas = lista.filter((o) => this.minhasDenuncias.has(o.id) && o.status === 'CONCLUIDA').length;
-      } catch {
-        concluidas = 0;
-      }
-    }
-    return { denuncias: this.minhasDenuncias.size, concluidas, confirmacoes: base.confirmacoes };
   }
 }

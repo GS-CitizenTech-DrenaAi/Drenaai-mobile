@@ -18,7 +18,7 @@ import { Campo } from '@/ui/Campo';
 import { Entrada } from '@/ui/Entrada';
 import { FolhaRepetida } from '@/ui/FolhaRepetida';
 import { Texto } from '@/ui/Texto';
-import { ALVO_MIN, cores, espaco, raio } from '@/ui/tema';
+import { ALVO_MIN, cores, espaco, familia, fonte, raio } from '@/ui/tema';
 
 type Local = { latitude: number; longitude: number; endereco: string; peloGps: boolean };
 
@@ -185,7 +185,12 @@ export default function Denunciar() {
   async function aoEnviar() {
     if (!local || enviando) return;
     setEnviando(true);
-    const proximas = local.peloGps ? await repo.buscarProximas(local.latitude, local.longitude, 50) : [];
+    let proximas: Ocorrencia[] = [];
+    try {
+      if (local.peloGps) proximas = await repo.buscarProximas(local.latitude, local.longitude, 50);
+    } catch {
+      proximas = [];
+    }
     setEnviando(false);
     if (proximas.length > 0) setParecida(proximas[0]);
     else criar();
@@ -194,11 +199,17 @@ export default function Denunciar() {
   async function confirmarParecida() {
     if (!parecida) return;
     setEnviando(true);
-    await repo.confirmar(parecida.id);
-    const id = parecida.id;
-    limpar();
-    setEnviando(false);
-    router.push({ pathname: '/ocorrencia/[id]', params: { id } });
+    try {
+      await repo.confirmar(parecida.id);
+      const id = parecida.id;
+      limpar();
+      router.push({ pathname: '/ocorrencia/[id]', params: { id } });
+    } catch (e) {
+      setParecida(null);
+      Alert.alert('Não foi possível confirmar', e instanceof ErroDrena ? e.message : 'Tente de novo em instantes.');
+    } finally {
+      setEnviando(false);
+    }
   }
 
   const podeEnviar = foto !== null && tipo !== null && local !== null && !buscandoLocal;
@@ -369,10 +380,10 @@ export default function Denunciar() {
 
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cores.fundo },
-  conteudo: { padding: espaco.xl, paddingTop: 56, gap: espaco.xl },
+  conteudo: { padding: espaco.xl, paddingTop: espaco.topo, gap: espaco.xl },
   bloco: { gap: espaco.sm },
   flex: { flex: 1 },
-  linha: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  linha: { flexDirection: 'row', alignItems: 'center', gap: espaco.s },
   opcaoFoto: {
     minHeight: 140,
     borderRadius: 18,
@@ -413,8 +424,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: cores.branco,
     padding: espaco.lg,
-    fontSize: 16,
-    fontFamily: 'Inter_400Regular',
+    fontSize: fonte.corpo,
+    fontFamily: familia.regular,
     color: cores.texto,
     textAlignVertical: 'top',
   },

@@ -6,13 +6,16 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { BAIRRO } from '@/dados/mock/dadosMock';
+import { ErroDrena } from '@/dados/DrenaRepo';
 import { repo } from '@/dados/repo';
 import { apenasHora, diaEHora, faixaSeveridade, formatarNumero, ORDEM_STATUS, rotuloStatus, rotuloTipo } from '@/dados/textos';
 import { Ocorrencia, Status } from '@/dados/tipos';
 import { ChipPrioridade } from '@/ui/ChipPrioridade';
+import { Aviso } from '@/ui/Aviso';
+import { Botao } from '@/ui/Botao';
 import { Entrada } from '@/ui/Entrada';
 import { Texto } from '@/ui/Texto';
-import { ALVO_MIN, cores, espaco, raio } from '@/ui/tema';
+import { ALVO_MIN, cores, espaco, familia, raio } from '@/ui/tema';
 
 const ICONE: Record<Status, LucideIcon> = {
   RECEBIDA: Inbox,
@@ -39,17 +42,34 @@ export default function Rastreio() {
   const [ocorrencia, setOcorrencia] = useState<Ocorrencia | null>(null);
   const [chuva12h, setChuva12h] = useState(0);
 
+  const [erro, setErro] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
+
   useEffect(() => {
-    Promise.all([repo.obterOcorrencia(id), repo.previsao(BAIRRO)]).then(([o, p]) => {
-      setOcorrencia(o);
-      setChuva12h(p.chuvaMm12h);
-    });
-  }, [id]);
+    Promise.all([repo.obterOcorrencia(id), repo.previsao(BAIRRO)])
+      .then(([o, p]) => {
+        setOcorrencia(o);
+        setChuva12h(p.chuvaMm12h);
+      })
+      .catch((e) => setErro(e instanceof ErroDrena ? e.message : 'Verifique sua internet e tente de novo.'));
+  }, [id, tentativa]);
+
+  function tentarDeNovo() {
+    setErro(null);
+    setTentativa((t) => t + 1);
+  }
 
   if (!ocorrencia) {
     return (
-      <View style={[styles.tela, styles.centro]}>
-        <ActivityIndicator size="large" color={cores.primaria} />
+      <View style={[styles.tela, styles.centro, styles.margem]}>
+        {erro ? (
+          <View style={styles.erro}>
+            <Aviso tipo="erro" titulo="Não foi possível abrir a denúncia" mensagem={erro} aoTentarDeNovo={tentarDeNovo} />
+            <Botao titulo="Voltar" variante="secundario" onPress={() => router.back()} />
+          </View>
+        ) : (
+          <ActivityIndicator size="large" color={cores.primaria} accessibilityLabel="Carregando a denúncia" />
+        )}
       </View>
     );
   }
@@ -79,7 +99,7 @@ export default function Rastreio() {
             <Image source={{ uri: ocorrencia.fotoUrl }} style={StyleSheet.absoluteFill} accessibilityLabel="Foto enviada na denúncia" />
           ) : (
             <View style={[StyleSheet.absoluteFill, styles.semFoto]}>
-              <ImageIcon size={48} color="#D6E6F5" strokeWidth={1.5} />
+              <ImageIcon size={48} color={cores.textoSobreAzul} strokeWidth={1.5} />
             </View>
           )}
           <View style={styles.sombraCapa} />
@@ -198,10 +218,12 @@ export default function Rastreio() {
 const styles = StyleSheet.create({
   tela: { flex: 1, backgroundColor: cores.fundo },
   centro: { alignItems: 'center', justifyContent: 'center' },
+  margem: { padding: espaco.xl },
+  erro: { alignSelf: 'stretch', gap: espaco.md },
   rolagem: { paddingBottom: espaco.xxl },
   capa: { height: 240, backgroundColor: cores.primaria },
   semFoto: { alignItems: 'center', justifyContent: 'center' },
-  sombraCapa: { position: 'absolute', left: 0, right: 0, top: 0, height: 90, backgroundColor: 'rgba(15,27,45,0.25)' },
+  sombraCapa: { position: 'absolute', left: 0, right: 0, top: 0, height: 90, backgroundColor: cores.transparente.capa },
   voltar: {
     position: 'absolute',
     top: 48,
@@ -215,7 +237,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   corpo: {
-    marginTop: -24,
+    marginTop: -espaco.xl,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     backgroundColor: cores.fundo,
@@ -228,12 +250,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: espaco.xs,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: espaco.s,
+    paddingHorizontal: espaco.ms,
     borderRadius: raio.pilula,
     backgroundColor: cores.azulClaro,
   },
-  negrito: { fontFamily: 'Inter_700Bold' },
+  negrito: { fontFamily: familia.negrito },
   etapa: { flexDirection: 'row', gap: espaco.md },
   trilhaCol: { alignItems: 'center', width: 40 },
   bolinhaCaixa: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
@@ -250,7 +272,7 @@ const styles = StyleSheet.create({
   },
   bolinhaFeita: { backgroundColor: cores.verde.solido, borderColor: cores.verde.solido },
   bolinhaAtual: { backgroundColor: cores.primaria, borderColor: cores.primaria },
-  trilha: { flex: 1, width: 3, minHeight: 20, backgroundColor: cores.borda, marginVertical: 2 },
+  trilha: { flex: 1, width: 3, minHeight: 20, backgroundColor: cores.borda, marginVertical: espaco.xxs },
   trilhaFeita: { backgroundColor: cores.verde.solido },
   etapaTexto: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingVertical: espaco.sm, marginBottom: espaco.sm, gap: espaco.sm },
   etapaAtual: {
@@ -260,7 +282,7 @@ const styles = StyleSheet.create({
     borderColor: cores.primaria,
     paddingHorizontal: espaco.md,
   },
-  flex: { flex: 1, gap: 2 },
+  flex: { flex: 1, gap: espaco.xxs },
   fila: { alignItems: 'center' },
   detalhes: { backgroundColor: cores.branco, borderRadius: 16, borderWidth: 1, borderColor: cores.borda, paddingHorizontal: espaco.lg },
   detalheLinha: {

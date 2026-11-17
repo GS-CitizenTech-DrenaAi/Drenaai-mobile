@@ -2,7 +2,7 @@ import { usePathname } from 'expo-router';
 import { Plus } from 'lucide-react-native';
 import { GestureResponderEvent, Pressable, StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { cores } from './tema';
+import { cores, espaco, familia } from './tema';
 import { Texto } from './Texto';
 
 type Props = {
@@ -35,7 +35,7 @@ export function BotaoDenunciar({ onPress }: Props) {
 }
 
 const styles = StyleSheet.create({
-  area: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 4 },
+  area: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: espaco.xs },
   quadrado: {
     width: 64,
     height: 64,
@@ -45,12 +45,12 @@ const styles = StyleSheet.create({
     borderColor: cores.branco,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -30,
+    marginTop: -(espaco.xl + espaco.s),
     elevation: 8,
     shadowColor: cores.primaria,
     shadowOpacity: 0.35,
     shadowRadius: 9,
     shadowOffset: { width: 0, height: 8 },
   },
-  rotulo: { fontFamily: 'Inter_700Bold', marginTop: 2 },
+  rotulo: { fontFamily: familia.negrito, marginTop: espaco.xxs },
 });
