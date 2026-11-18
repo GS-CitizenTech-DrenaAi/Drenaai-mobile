@@ -32,7 +32,7 @@ Aplicativo do cidadão da solução **DrenaAi**, feito para a disciplina de **Mo
 
 ## Vídeo
 
-**[Assista ao vídeo no YouTube](LINK_DO_VIDEO)** (até 3 minutos): o app rodando, a jornada principal completa e os dados sendo salvos e recuperados.
+**[Assista ao vídeo no YouTube](https://www.youtube.com/watch?v=dxE7q2-48ik)** (até 3 minutos): o app rodando, a jornada principal completa e os dados sendo salvos e recuperados.
 
 ## Telas
 
